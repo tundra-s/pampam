@@ -75,8 +75,6 @@ const updateMousePosition = (dx, dy) => {
 const mouseMoveListener = (e) => {
   const dx = e.clientX - buffer.x;
   const dy = e.clientY - buffer.y;
-  console.log(`[ dx: ${viewport.x}; dy: ${viewport.y}]`);
-
   buffer.x = e.clientX;
   buffer.y = e.clientY;
 
