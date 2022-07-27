@@ -82,11 +82,7 @@ const mouseMoveListener = (e) => {
   viewport.y += dy;
 };
 
-const init = () => {
-  initContext();
-
-  window.requestAnimationFrame(render);
-
+const initListeners = () => {
   window.addEventListener("mousedown", (e) => {
     buffer.x = e.clientX;
     buffer.y = e.clientY;
@@ -97,6 +93,12 @@ const init = () => {
   window.addEventListener("mouseup", () => {
     window.removeEventListener("mousemove", mouseMoveListener);
   });
+};
+
+const init = () => {
+  window.requestAnimationFrame(render);
+
+  initContext();
 };
 
 window.onload = init;
