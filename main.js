@@ -1,4 +1,5 @@
 const BACKGROUND_COLOR = "rgb(50, 50, 50)";
+const ID_CANVAS = "canvas";
 
 const viewport = {
   x: 0,
@@ -12,19 +13,6 @@ const grid = {
 const buffer = {
   x: 0,
   y: 0,
-};
-
-const context = {};
-
-const getContext = () => {
-  return context.ctx;
-};
-
-const initContext = () => {
-  context.canvas = document.querySelector("#canvas");
-  context.ctx = context.canvas && context.canvas.getContext("2d");
-  context.canvas.width = window.innerWidth;
-  context.canvas.height = window.innerHeight;
 };
 
 const drawGreed = (ctx) => {
@@ -52,17 +40,9 @@ const drawBackground = (ctx) => {
   ctx.fill();
 };
 
-const draw = () => {
-  const ctx = getContext();
-
+const draw = ({ ctx }) => {
   drawBackground(ctx);
   drawGreed(ctx);
-};
-
-const render = () => {
-  draw();
-
-  window.requestAnimationFrame(render);
 };
 
 const updateMousePosition = (dx, dy) => {
@@ -75,8 +55,6 @@ const updateMousePosition = (dx, dy) => {
 const mouseMoveListener = (e) => {
   const dx = e.clientX - buffer.x;
   const dy = e.clientY - buffer.y;
-  console.log(`[ dx: ${viewport.x}; dy: ${viewport.y}]`);
-
   buffer.x = e.clientX;
   buffer.y = e.clientY;
 
@@ -84,11 +62,7 @@ const mouseMoveListener = (e) => {
   viewport.y += dy;
 };
 
-const init = () => {
-  initContext();
-
-  window.requestAnimationFrame(render);
-
+const initListeners = () => {
   window.addEventListener("mousedown", (e) => {
     buffer.x = e.clientX;
     buffer.y = e.clientY;
@@ -99,6 +73,15 @@ const init = () => {
   window.addEventListener("mouseup", () => {
     window.removeEventListener("mousemove", mouseMoveListener);
   });
+};
+
+const init = () => {
+  const canvas = document.querySelector(`#${ID_CANVAS}`);
+  const core = new Core(canvas);
+
+  core.addRender(draw);
+
+  initListeners();
 };
 
 window.onload = init;
