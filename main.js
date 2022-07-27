@@ -1,6 +1,40 @@
 const BACKGROUND_COLOR = "rgb(50, 50, 50)";
 const ID_CANVAS = "canvas";
 
+const Info = function () {
+  const queue = {};
+
+  const init = () => {
+    this.wrapper = document.createElement("div");
+
+    this.wrapper.classList.add("info");
+
+    document.body.append(this.wrapper);
+  };
+
+  const refresh = () => {
+    this.wrapper.innerHTML = "";
+
+    for (let key in queue) {
+      const line = document.createElement("div");
+      line.classList.add("info__line");
+      line.innerText = `${key} : ${queue[key]}`;
+      this.wrapper.append(line);
+    }
+  };
+
+  init();
+
+  return {
+    log: (name, value) => {
+      queue[name] = value;
+      refresh();
+    },
+  };
+};
+
+const info = new Info();
+
 const viewport = {
   x: 0,
   y: 0,
@@ -43,6 +77,8 @@ const drawBackground = (ctx) => {
 const draw = ({ ctx }) => {
   drawBackground(ctx);
   drawGreed(ctx);
+  info.log("viewportX", viewport.x);
+  info.log("viewportY", viewport.y);
 };
 
 const updateMousePosition = (dx, dy) => {
