@@ -1,11 +1,3 @@
-const BACKGROUND_COLOR = "rgb(50, 50, 50)";
-const ID_CANVAS = "canvas";
-const SCROLL_WEIGTH = 0.002;
-const MAX_FIELD = {
-  x: 10000,
-  y: 10000,
-};
-
 const Info = function () {
   const queue = {};
 
@@ -46,44 +38,37 @@ const viewport = {
   zoom: 1,
 };
 
-const grid = {
-  size: 100,
-};
-
 const buffer = {
   x: 0,
   y: 0,
 };
 
 const drawGreed = (ctx) => {
-  const adaptiveGreedSize = grid.size * viewport.zoom;
+  const adaptiveGreedSize = GREED.size * viewport.zoom;
 
+  ctx.beginPath();
   for (let i = 0; i < window.innerWidth / adaptiveGreedSize; i += 1) {
-    ctx.beginPath();
-    ctx.strokeStyle = "rgb(255, 0, 0)";
+    ctx.strokeStyle = GREED.line;
     ctx.moveTo(i * adaptiveGreedSize + (viewport.x % adaptiveGreedSize), 0);
     ctx.lineTo(
       i * adaptiveGreedSize + (viewport.x % adaptiveGreedSize),
       window.innerHeight
     );
-    ctx.stroke();
   }
 
   for (let i = 0; i < window.innerWidth / adaptiveGreedSize; i += 1) {
-    ctx.beginPath();
-    ctx.strokeStyle = "rgb(255, 0, 0)";
     ctx.moveTo(0, adaptiveGreedSize * i + (viewport.y % adaptiveGreedSize));
     ctx.lineTo(
       window.innerWidth,
       adaptiveGreedSize * i + (viewport.y % adaptiveGreedSize)
     );
-    ctx.stroke();
   }
+  ctx.stroke();
 };
 
 const drawBackground = (ctx) => {
   ctx.beginPath();
-  ctx.fillStyle = BACKGROUND_COLOR;
+  ctx.fillStyle = GREED.background;
   ctx.rect(0, 0, window.innerWidth, window.innerHeight);
   ctx.fill();
 };
