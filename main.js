@@ -1,5 +1,6 @@
 const BACKGROUND_COLOR = "rgb(50, 50, 50)";
 const ID_CANVAS = "canvas";
+const SCROLL_WEIGTH = 0.002;
 const MAX_FIELD = {
   x: 10000,
   y: 10000,
@@ -42,6 +43,7 @@ const info = new Info();
 const viewport = {
   x: 0,
   y: 0,
+  zoom: 1,
 };
 
 const grid = {
@@ -54,7 +56,7 @@ const buffer = {
 };
 
 const drawGreed = (ctx) => {
-  const adaptiveGreedSize = grid.size * 0.3;
+  const adaptiveGreedSize = grid.size * viewport.zoom;
 
   for (let i = 0; i < window.innerWidth / adaptiveGreedSize; i += 1) {
     ctx.beginPath();
@@ -66,8 +68,6 @@ const drawGreed = (ctx) => {
     );
     ctx.stroke();
   }
-
-  // Отрисовка грида по Y
 
   for (let i = 0; i < window.innerWidth / adaptiveGreedSize; i += 1) {
     ctx.beginPath();
@@ -88,11 +88,16 @@ const drawBackground = (ctx) => {
   ctx.fill();
 };
 
+const updateInfoUI = () => {
+  info.log("viewportX", viewport.x);
+  info.log("viewportY", viewport.y);
+  info.log("zoom", viewport.zoom);
+};
+
 const draw = ({ ctx }) => {
   drawBackground(ctx);
   drawGreed(ctx);
-  info.log("viewportX", viewport.x);
-  info.log("viewportY", viewport.y);
+  updateInfoUI();
 };
 
 const updateMousePosition = (dx, dy) => {
@@ -122,6 +127,10 @@ const initListeners = () => {
 
   window.addEventListener("mouseup", () => {
     window.removeEventListener("mousemove", mouseMoveListener);
+  });
+
+  window.addEventListener("wheel", (e) => {
+    viewport.zoom += e.deltaY * SCROLL_WEIGTH;
   });
 };
 
