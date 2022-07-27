@@ -1,5 +1,9 @@
 const BACKGROUND_COLOR = "rgb(50, 50, 50)";
 const ID_CANVAS = "canvas";
+const MAX_FIELD = {
+  x: 10000,
+  y: 10000,
+};
 
 const Info = function () {
   const queue = {};
@@ -50,19 +54,29 @@ const buffer = {
 };
 
 const drawGreed = (ctx) => {
-  for (let i = 0; i < window.innerWidth / grid.size; i += 1) {
+  const adaptiveGreedSize = grid.size * 0.3;
+
+  for (let i = 0; i < window.innerWidth / adaptiveGreedSize; i += 1) {
     ctx.beginPath();
     ctx.strokeStyle = "rgb(255, 0, 0)";
-    ctx.moveTo(i * grid.size * 0.3 + viewport.x, 0);
-    ctx.lineTo(i * grid.size * 0.3 + viewport.x, window.innerHeight);
+    ctx.moveTo(i * adaptiveGreedSize + (viewport.x % adaptiveGreedSize), 0);
+    ctx.lineTo(
+      i * adaptiveGreedSize + (viewport.x % adaptiveGreedSize),
+      window.innerHeight
+    );
     ctx.stroke();
   }
 
-  for (let i = 0; i < window.innerWidth / grid.size; i += 1) {
+  // Отрисовка грида по Y
+
+  for (let i = 0; i < window.innerWidth / adaptiveGreedSize; i += 1) {
     ctx.beginPath();
     ctx.strokeStyle = "rgb(255, 0, 0)";
-    ctx.moveTo(0, grid.size * i * 0.3 + viewport.y);
-    ctx.lineTo(window.innerWidth, grid.size * i * 0.3 + viewport.y);
+    ctx.moveTo(0, adaptiveGreedSize * i + (viewport.y % adaptiveGreedSize));
+    ctx.lineTo(
+      window.innerWidth,
+      adaptiveGreedSize * i + (viewport.y % adaptiveGreedSize)
+    );
     ctx.stroke();
   }
 };
