@@ -1,4 +1,9 @@
+import { GREED, ID_CANVAS, SCROLL_WEIGTH } from "./data/config";
 import Info from "./mock/info";
+
+interface DrawArgument {
+  ctx: CanvasRenderingContext2D;
+}
 
 const info = new Info();
 
@@ -32,7 +37,7 @@ const TEMP_MOUSE = {
   y: window.innerHeight / 2,
 };
 
-const drawGreed = (ctx) => {
+const drawGreed = ({ ctx }: DrawArgument) => {
   const adaptiveGreedSize = GREED.size * viewport.zoom;
 
   info.log("someX", viewport.x % adaptiveGreedSize);
@@ -75,7 +80,7 @@ const drawGreed = (ctx) => {
   ctx.fill();
 };
 
-const drawBackground = (ctx) => {
+const drawBackground = ({ ctx }: DrawArgument) => {
   ctx.beginPath();
   ctx.fillStyle = GREED.background;
   ctx.rect(0, 0, window.innerWidth, window.innerHeight);
@@ -92,7 +97,7 @@ const updateInfoUI = () => {
   info.log("globalY", viewport.globalY);
 };
 
-const drawCross = (ctx) => {
+const drawCross = ({ ctx }: DrawArgument) => {
   ctx.beginPath();
   ctx.strokeStyle = "rgb(0, 255, 0)";
   ctx.moveTo(window.innerWidth / 2, 0);
@@ -102,7 +107,7 @@ const drawCross = (ctx) => {
   ctx.stroke();
 };
 
-const drawNewGreed = (ctx) => {
+const drawNewGreed = ({ ctx }: DrawArgument) => {
   // Половина экрана по X и Y (середина экрана)
   const halfWidth = window.innerWidth / 2;
   const halfHeight = window.innerHeight / 2;
@@ -202,15 +207,15 @@ const drawNewGreed = (ctx) => {
   ctx.fill();
 };
 
-const draw = ({ ctx }) => {
-  drawBackground(ctx);
+const draw = ({ ctx }: DrawArgument) => {
+  drawBackground({ ctx });
   // drawGreed(ctx);
-  drawNewGreed(ctx);
-  drawCross(ctx);
+  drawNewGreed({ ctx });
+  drawCross({ ctx });
   updateInfoUI();
 };
 
-const updateMousePosition = (dx, dy) => {
+const updateMousePosition = (dx: number, dy: number) => {
   if (!dx || !dy) return;
 
   viewport.x = dx;
@@ -222,7 +227,7 @@ const _clearLocalStorage = () => {
   window.localStorage.removeItem("vpy");
 };
 
-const mouseMoveListener = (e) => {
+const mouseMoveListener = (e: MouseEvent) => {
   const dx = e.clientX - buffer.x;
   const dy = e.clientY - buffer.y;
   buffer.x = e.clientX;
@@ -264,8 +269,6 @@ const init = () => {
 
   viewport.x = viewport.globalX * GREED.size || 0;
   viewport.y = viewport.globalY * GREED.size || 0;
-  // viewport.x = window.innerWidth / 2;
-  // viewport.y = window.innerHeight / 2;
 
   core.addRender(draw);
 
