@@ -16,8 +16,9 @@ export class Core {
 
     const context = canvasElement?.getContext("2d");
 
-    if (context !== null) this.ctx = context;
+    if (context === null) return;
 
+    this.ctx = context;
     this.resize();
 
     window.requestAnimationFrame(() => this.render());
@@ -27,16 +28,16 @@ export class Core {
   isRenderStopped: boolean = false;
   renderQueue: RenderChallenger[] = [];
 
-  private resize() {
+  private resize(): void {
     if (!this.canvas) return;
 
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
   }
 
-  private render() {
+  private render(): void {
     this.renderQueue.map((challengerRender) => {
-      if (!challengerRender) return false;
+      if (!challengerRender) return;
 
       if (typeof challengerRender !== "function") return;
 
@@ -49,23 +50,29 @@ export class Core {
       window.requestAnimationFrame(() => this.render());
   }
 
-  startRender() {
+  isCreated(): boolean {
+    return this.ctx !== undefined && this.ctx !== null;
+  }
+
+  startRender(): void {
     if (!this.isRenderStopped) return;
 
     window.requestAnimationFrame(() => this.render());
   }
 
-  stopRender() {
+  stopRender(): void {
     this.isRenderStopped = true;
   }
 
-  addRender(renderChallenger: RenderChallenger) {
+  addRender(renderChallenger: RenderChallenger): boolean {
     // TODO обработать ошибку
-    if (!renderChallenger) return;
+    if (!renderChallenger) return false;
 
     this.renderQueue.push(renderChallenger);
 
     this.isRenderStopped && this.startRender();
     this.isRenderStopped = false;
+
+    return true;
   }
 }

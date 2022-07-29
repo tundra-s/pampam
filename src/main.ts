@@ -1,5 +1,6 @@
 import { GREED, WORLD } from "./data/config";
 import { Core, RenderChallengerArgument } from "./lib/core";
+import World from "./lib/world";
 import Info from "./mock/info";
 
 const info = new Info("Main");
@@ -20,13 +21,6 @@ const viewport = {
 const buffer = {
   x: 0,
   y: 0,
-};
-
-const drawBackground = ({ ctx }: RenderChallengerArgument) => {
-  ctx.beginPath();
-  ctx.fillStyle = GREED.background;
-  ctx.rect(0, 0, window.innerWidth, window.innerHeight);
-  ctx.fill();
 };
 
 const updateInfoUI = () => {
@@ -141,7 +135,6 @@ const drawNewGreed = ({ ctx }: RenderChallengerArgument) => {
 };
 
 const draw = ({ ctx }: RenderChallengerArgument) => {
-  drawBackground({ ctx });
   drawNewGreed({ ctx });
   drawCross({ ctx });
   updateInfoUI();
@@ -215,10 +208,12 @@ const init = () => {
   document.body.append(canvas);
 
   if (!canvas) return;
-
   const core = new Core(canvas);
 
-  core.addRender(draw);
+  if (core.isCreated()) return;
+  const world = new World();
+
+  core.addRender(world.render);
 
   initCoordMemo();
   initListeners();
