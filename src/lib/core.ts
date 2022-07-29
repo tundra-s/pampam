@@ -5,19 +5,19 @@ interface RenderChallengerArgument {
 type RenderChallenger = (arg: RenderChallengerArgument) => void;
 
 export class Core {
-  renderQueue: RenderChallenger[];
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  isRenderStopped: boolean;
+  canvas?: HTMLCanvasElement;
+  ctx?: CanvasRenderingContext2D | null;
 
   constructor(canvasElement: HTMLCanvasElement) {
     // TODO точнее проверить что передан именно canvas
     if (!canvasElement) return;
 
-    this.renderQueue = [];
     this.isRenderStopped = true;
     this.canvas = canvasElement;
-    this.ctx = canvasElement.getContext && canvasElement.getContext("2d");
+
+    const context = canvasElement?.getContext("2d");
+
+    if (context !== null) this.ctx = context;
 
     this._resize();
 
@@ -25,7 +25,12 @@ export class Core {
     window.addEventListener("resize", this._resize);
   }
 
+  isRenderStopped: boolean = false;
+  renderQueue: RenderChallenger[] = [];
+
   _resize() {
+    if (!this.canvas) return;
+
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
   }
@@ -36,14 +41,17 @@ export class Core {
 
       if (typeof challengerRender !== "function") return;
 
-      challengerRender({ ctx: this.ctx });
+      console.log("s");
+      if (this.ctx) {
+        challengerRender({ ctx: this.ctx });
+      }
     });
 
     if (!this.isRenderStopped)
       window.requestAnimationFrame(() => this._render());
   }
 
-  startRender(): void {
+  startRender() {
     if (!this.isRenderStopped) return;
 
     window.requestAnimationFrame(() => this._render());
@@ -53,7 +61,7 @@ export class Core {
     this.isRenderStopped = true;
   }
 
-  addRender(renderChallenger: RenderChallenger): boolean {
+  addRender(renderChallenger: RenderChallenger) {
     // TODO обработать ошибку
     if (!renderChallenger) return;
 

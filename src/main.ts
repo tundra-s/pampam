@@ -1,4 +1,5 @@
-import { GREED, ID_CANVAS, SCROLL_WEIGTH } from "./data/config";
+import { GREED, SCROLL_WEIGTH } from "./data/config";
+import { Core } from "./lib/core";
 import Info from "./mock/info";
 
 interface DrawArgument {
@@ -261,7 +262,11 @@ const initListeners = () => {
 };
 
 const init = () => {
-  const canvas = document.querySelector(`#${ID_CANVAS}`);
+  const canvas = document.createElement("canvas");
+  document.body.append(canvas);
+
+  if (!canvas) return;
+
   const core = new Core(canvas);
 
   viewport.globalX = parseInt(window.localStorage.vpx);
@@ -273,8 +278,6 @@ const init = () => {
   core.addRender(draw);
 
   initListeners();
-
-  initDraft(core);
 };
 
 window.onload = init;
