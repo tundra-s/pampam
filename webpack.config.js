@@ -15,6 +15,13 @@ module.exports = {
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
   },
+  devServer: {
+    static: {
+      directory: path.join(__dirname, "public"),
+    },
+    compress: true,
+    port: 3020,
+  },
   mode: "development",
   output: {
     path: path.resolve(__dirname, "dist"),
