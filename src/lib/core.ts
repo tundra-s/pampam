@@ -8,7 +8,7 @@ type RenderChallengerObject = {
   render: RenderChallengerFunction;
 };
 
-type RenderChallenger = RenderChallengerFunction | RenderChallengerObject;
+type RenderChallenger = RenderChallengerObject;
 
 export class Core {
   canvas?: HTMLCanvasElement;
@@ -47,17 +47,9 @@ export class Core {
     this.renderQueue.map((challengerRender) => {
       if (!challengerRender) return;
 
-      if (typeof challengerRender === "function") {
-        challengerRender({
-          ctx: this.ctx as CanvasRenderingContext2D,
-        });
-      }
-
-      if (typeof challengerRender === "object") {
-        challengerRender.render({
-          ctx: this.ctx as CanvasRenderingContext2D,
-        });
-      }
+      challengerRender.render({
+        ctx: this.ctx as CanvasRenderingContext2D,
+      });
     });
 
     if (!this.isRenderStopped)
