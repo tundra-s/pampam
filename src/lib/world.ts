@@ -1,6 +1,6 @@
 import { GREED } from "../data/config";
 
-interface WorldCreation {
+interface RenderWorldArguments {
   ctx: CanvasRenderingContext2D;
 }
 
@@ -18,21 +18,21 @@ export default class World {
   globalY: number = 0;
   zoom: number = 1;
   greed: GreedSettings = {
-    background: GREED?.background || "rgb(50, 50, 50)",
-    line: GREED?.line || "rgb(255, 255, 255)",
-    size: GREED?.size || 100,
+    background: "rgb(50, 50, 50)",
+    line: "rgb(255, 255, 255)",
+    size: 100,
   };
 
-  private drawBackground(ctx: CanvasRenderingContext2D): void {
+  constructor() {}
+
+  render({ ctx }: RenderWorldArguments): void {
+    this.drawBackground(ctx);
+  }
+
+  drawBackground(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
     ctx.fillStyle = this.greed.background;
     ctx.rect(0, 0, window.innerWidth, window.innerHeight);
     ctx.fill();
-  }
-
-  render(): void {
-    if (this.ctx === null || this.ctx === undefined) return;
-
-    this.drawBackground(this.ctx);
   }
 }

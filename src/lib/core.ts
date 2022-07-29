@@ -2,7 +2,13 @@ export interface RenderChallengerArgument {
   ctx: CanvasRenderingContext2D;
 }
 
-export type RenderChallenger = (arg: RenderChallengerArgument) => void;
+type RenderChallengerFunction = (arg: RenderChallengerArgument) => void;
+
+type RenderChallengerObject = {
+  render: RenderChallengerFunction;
+};
+
+type RenderChallenger = RenderChallengerFunction | RenderChallengerObject;
 
 export class Core {
   canvas?: HTMLCanvasElement;
@@ -36,13 +42,21 @@ export class Core {
   }
 
   private render(): void {
+    if (this.ctx === undefined && this.ctx === null) return;
+
     this.renderQueue.map((challengerRender) => {
       if (!challengerRender) return;
 
-      if (typeof challengerRender !== "function") return;
+      if (typeof challengerRender === "function") {
+        challengerRender({
+          ctx: this.ctx as CanvasRenderingContext2D,
+        });
+      }
 
-      if (this.ctx) {
-        challengerRender({ ctx: this.ctx });
+      if (typeof challengerRender === "object") {
+        challengerRender.render({
+          ctx: this.ctx as CanvasRenderingContext2D,
+        });
       }
     });
 

@@ -210,10 +210,11 @@ const init = () => {
   if (!canvas) return;
   const core = new Core(canvas);
 
-  if (core.isCreated()) return;
+  if (!core.isCreated()) return;
+
   const world = new World();
 
-  core.addRender(world.render);
+  core.addRender(world);
 
   initCoordMemo();
   initListeners();
