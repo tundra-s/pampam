@@ -8,10 +8,16 @@ class Core {
     this.canvas = canvasElement;
     this.ctx = canvasElement.getContext && canvasElement.getContext("2d");
 
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
+    this._resize();
 
     window.requestAnimationFrame(() => this._render());
+    window.addEventListener('resize', this._resize);
+
+  }
+
+  _resize() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
   }
 
   _render() {
