@@ -9,7 +9,7 @@ class Info {
   queue: Queue;
   wrapper: HTMLDivElement;
 
-  constructor() {
+  constructor(name?: string) {
     this.queue = {};
 
     this.wrapper = document.createElement("div");
@@ -18,20 +18,30 @@ class Info {
     document.body.append(this.wrapper);
   }
 
-  refresh() {
-    this.wrapper.innerHTML = "";
-
+  refreshAll() {
     for (let key in this.queue) {
-      const line = document.createElement("div");
-      line.classList.add("info__line");
-      line.innerText = `${key} : ${this.queue[key]}`;
-      this.wrapper.append(line);
+      this.refresh(key, this.queue[key]);
     }
   }
 
+  refresh(key: string, value: InfoValue) {
+    let line = document.querySelector<HTMLDivElement>(`#${key}`);
+
+    if (!line) {
+      line = document.createElement("div");
+      line.id = `${key}`;
+      line.classList.add("info__line");
+      this.wrapper.append(line);
+    }
+
+    line.innerHTML = `<span>${key}</span> : <span>${value}</span>`;
+  }
+
   log(name: InfoName, value: InfoValue): void {
-    this.refresh();
+    if (this.queue[name] === value) return;
+
     this.queue[name] = value;
+    this.refresh(name, value);
   }
 }
 

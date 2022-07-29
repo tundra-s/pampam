@@ -6,7 +6,7 @@ interface DrawArgument {
   ctx: CanvasRenderingContext2D;
 }
 
-const info = new Info();
+const info = new Info("Main");
 
 const mouse = {
   x: 0,
