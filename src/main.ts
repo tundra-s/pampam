@@ -1,23 +1,12 @@
-import { GREED, SCROLL_WEIGTH } from "./data/config";
-import { Core } from "./lib/core";
+import { GREED, WORLD } from "./data/config";
+import { Core, RenderChallengerArgument } from "./lib/core";
 import Info from "./mock/info";
-
-interface DrawArgument {
-  ctx: CanvasRenderingContext2D;
-}
 
 const info = new Info("Main");
 
 const mouse = {
   x: 0,
   y: 0,
-};
-
-const home = {
-  gx: 0,
-  gy: 0,
-  width: 50,
-  heigh: 50,
 };
 
 const viewport = {
@@ -33,55 +22,7 @@ const buffer = {
   y: 0,
 };
 
-const TEMP_MOUSE = {
-  x: window.innerWidth / 2,
-  y: window.innerHeight / 2,
-};
-
-const drawGreed = ({ ctx }: DrawArgument) => {
-  const adaptiveGreedSize = GREED.size * viewport.zoom;
-
-  info.log("someX", viewport.x % adaptiveGreedSize);
-  info.log("someY", viewport.y % adaptiveGreedSize);
-
-  ctx.beginPath();
-  for (let i = 0; i < window.innerWidth / adaptiveGreedSize; i += 1) {
-    const firstX =
-      i * adaptiveGreedSize +
-      ((viewport.x * viewport.zoom) % adaptiveGreedSize);
-    const secondX =
-      i * adaptiveGreedSize +
-      ((viewport.x * viewport.zoom) % adaptiveGreedSize);
-
-    ctx.strokeStyle = GREED.line;
-    ctx.moveTo(firstX, 0);
-    ctx.lineTo(secondX, window.innerHeight);
-  }
-
-  for (let i = 0; i < window.innerWidth / adaptiveGreedSize; i += 1) {
-    ctx.moveTo(
-      0,
-      adaptiveGreedSize * i + ((viewport.y * viewport.zoom) % adaptiveGreedSize)
-    );
-    ctx.lineTo(
-      window.innerWidth,
-      adaptiveGreedSize * i + ((viewport.y * viewport.zoom) % adaptiveGreedSize)
-    );
-  }
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.fillStyle = "rgb(255, 0, 0)";
-  ctx.rect(
-    (viewport.x - 10) * viewport.zoom,
-    (viewport.y - 10) * viewport.zoom,
-    20 * viewport.zoom,
-    20 * viewport.zoom
-  );
-  ctx.fill();
-};
-
-const drawBackground = ({ ctx }: DrawArgument) => {
+const drawBackground = ({ ctx }: RenderChallengerArgument) => {
   ctx.beginPath();
   ctx.fillStyle = GREED.background;
   ctx.rect(0, 0, window.innerWidth, window.innerHeight);
@@ -98,7 +39,7 @@ const updateInfoUI = () => {
   info.log("globalY", viewport.globalY);
 };
 
-const drawCross = ({ ctx }: DrawArgument) => {
+const drawCross = ({ ctx }: RenderChallengerArgument) => {
   ctx.beginPath();
   ctx.strokeStyle = "rgb(0, 255, 0)";
   ctx.moveTo(window.innerWidth / 2, 0);
@@ -108,18 +49,12 @@ const drawCross = ({ ctx }: DrawArgument) => {
   ctx.stroke();
 };
 
-const drawNewGreed = ({ ctx }: DrawArgument) => {
-  // Половина экрана по X и Y (середина экрана)
+const drawNewGreed = ({ ctx }: RenderChallengerArgument) => {
   const halfWidth = window.innerWidth / 2;
   const halfHeight = window.innerHeight / 2;
 
-  // Размер грида с учетом зума
   const adaptiveGreedSize = GREED.size * viewport.zoom;
 
-  // старт отрисовки цикла
-  const startX = -Math.round(halfWidth / adaptiveGreedSize);
-
-  // отрисовка влево
   for (let i = 0; i < halfWidth / 2; i += 1) {
     ctx.beginPath();
     ctx.strokeStyle = GREED.line;
@@ -140,7 +75,6 @@ const drawNewGreed = ({ ctx }: DrawArgument) => {
     ctx.stroke();
   }
 
-  // отрисовка вправо
   for (let i = 0; i < halfWidth / 2; i += 1) {
     ctx.beginPath();
     ctx.strokeStyle = GREED.line;
@@ -159,7 +93,6 @@ const drawNewGreed = ({ ctx }: DrawArgument) => {
     ctx.stroke();
   }
 
-  // отрисовка вверх
   for (let i = 0; i < halfHeight / 2; i += 1) {
     ctx.beginPath();
     ctx.strokeStyle = GREED.line;
@@ -178,7 +111,6 @@ const drawNewGreed = ({ ctx }: DrawArgument) => {
     ctx.stroke();
   }
 
-  // отрисовка вниз
   for (let i = 1; i < halfHeight / 2; i += 1) {
     ctx.beginPath();
     ctx.strokeStyle = GREED.line;
@@ -208,9 +140,8 @@ const drawNewGreed = ({ ctx }: DrawArgument) => {
   ctx.fill();
 };
 
-const draw = ({ ctx }: DrawArgument) => {
+const draw = ({ ctx }: RenderChallengerArgument) => {
   drawBackground({ ctx });
-  // drawGreed(ctx);
   drawNewGreed({ ctx });
   drawCross({ ctx });
   updateInfoUI();
@@ -257,8 +188,26 @@ const initListeners = () => {
   });
 
   window.addEventListener("wheel", (e) => {
-    viewport.zoom += e.deltaY * SCROLL_WEIGTH;
+    const delta = e.deltaY * WORLD.zoom.zoomSpeed * viewport.zoom;
+
+    if (delta + viewport.zoom > WORLD.zoom.max) {
+      return (viewport.zoom = WORLD.zoom.max);
+    }
+
+    if (delta + viewport.zoom < WORLD.zoom.min) {
+      return (viewport.zoom = WORLD.zoom.min);
+    }
+
+    viewport.zoom += delta;
   });
+};
+
+const initCoordMemo = () => {
+  viewport.globalX = parseInt(window.localStorage.vpx);
+  viewport.globalY = parseInt(window.localStorage.vpy);
+
+  viewport.x = viewport.globalX * GREED.size || 0;
+  viewport.y = viewport.globalY * GREED.size || 0;
 };
 
 const init = () => {
@@ -269,14 +218,9 @@ const init = () => {
 
   const core = new Core(canvas);
 
-  viewport.globalX = parseInt(window.localStorage.vpx);
-  viewport.globalY = parseInt(window.localStorage.vpy);
-
-  viewport.x = viewport.globalX * GREED.size || 0;
-  viewport.y = viewport.globalY * GREED.size || 0;
-
   core.addRender(draw);
 
+  initCoordMemo();
   initListeners();
 };
 
