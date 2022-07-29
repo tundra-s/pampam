@@ -29,7 +29,42 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "./index.html",
+      filename: "index.html",
+      inject: false,
+      templateContent: ({ htmlWebpackPlugin }) => `
+        <html>
+          <head>
+            ${htmlWebpackPlugin.tags.headTags}
+            <style> 
+              * {
+                margin: 0;
+                padding: 0;
+              }
+        
+              body {
+                overflow: hidden;
+              }
+        
+              .info {
+                position: absolute;
+                top: 0;
+                right: 0;
+                background-color: rgb(30, 30, 30);
+                padding: 10px;
+                color: rgb(255, 255, 255);
+                font-family: Arial, Helvetica, sans-serif;
+              }
+        
+              .info_line {
+                padding: 3px;
+              }
+            </style>
+          </head>
+          <body>
+            ${htmlWebpackPlugin.tags.bodyTags}
+          </body>
+        </html>
+      `,
     }),
   ],
 };

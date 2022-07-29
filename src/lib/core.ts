@@ -41,7 +41,6 @@ export class Core {
 
       if (typeof challengerRender !== "function") return;
 
-      console.log("s");
       if (this.ctx) {
         challengerRender({ ctx: this.ctx });
       }
