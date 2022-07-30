@@ -9,16 +9,11 @@ interface RenderChunkArguments {
 
 interface RenderChunkPosition {
   global: Vector;
-  local: Vector;
 }
 
 export class RenderChunk {
   private position: RenderChunkPosition = {
     global: {
-      x: 0,
-      y: 0,
-    },
-    local: {
       x: 0,
       y: 0,
     },
