@@ -1,4 +1,3 @@
-import { GREED } from "./data/config";
 import { Core, RenderChallengerArgument } from "./lib/core";
 import World from "./lib/world";
 import Info from "./mock/info";

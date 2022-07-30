@@ -81,4 +81,16 @@ export class Core {
 
     return true;
   }
+
+  removeRender(renderChallenger: RenderChallenger): boolean {
+    let isRemoveSuccess = false;
+    this.renderQueue = this.renderQueue.filter((chalenger) => {
+      if (chalenger !== renderChallenger) {
+        isRemoveSuccess = true;
+        return false;
+      }
+    });
+
+    return isRemoveSuccess;
+  }
 }
