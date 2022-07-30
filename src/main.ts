@@ -7,7 +7,7 @@ const info = new Info("Main");
 
 // TODO переписать на World
 const updateInfoUI = (world: World) => {
-  const worldValues = world.getValues();
+  const worldValues = world.getViewportValues();
 
   info.log("viewportX", worldValues.localCoords.x);
   info.log("viewportY", worldValues.localCoords.y);

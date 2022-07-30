@@ -1,21 +1,16 @@
-import { WorldMouse, WorldViewport } from "./world";
+import { Vector } from "./world";
 
 interface RenderEntityArguments {
   ctx: CanvasRenderingContext2D;
-  mouse: WorldMouse;
-  viewport: WorldViewport;
+  position: Vector;
+  zoom: number;
 }
 
 export class RenderEntity {
-  private draw({ ctx, viewport }: RenderEntityArguments): void {
+  private draw({ ctx, position, zoom }: RenderEntityArguments): void {
     ctx.beginPath();
     ctx.fillStyle = "rgb(0, 255, 0)";
-    ctx.rect(
-      (viewport.localCoords.x + 0) * viewport.zoom,
-      viewport.localCoords.y + 0 * viewport.zoom,
-      100 * viewport.zoom,
-      100 * viewport.zoom
-    );
+    ctx.rect(position.x, position.y, 100 * zoom, 100 * zoom);
     ctx.fill();
   }
 

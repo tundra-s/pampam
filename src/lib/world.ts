@@ -5,12 +5,6 @@ interface RenderWorldArguments {
   ctx: CanvasRenderingContext2D;
 }
 
-interface GreedSettings {
-  background: string;
-  line: string;
-  size: number;
-}
-
 export interface Vector {
   x: number;
   y: number;
@@ -18,7 +12,7 @@ export interface Vector {
 
 interface SceneObject {
   position: Vector;
-  size: number;
+  zoom: number;
 }
 
 export interface WorldMouse {
@@ -30,6 +24,12 @@ export interface WorldViewport {
   localCoords: Vector;
   globalCoords: Vector;
   zoom: number;
+}
+
+export interface WorldGreed {
+  background: string;
+  line: string;
+  size: number;
 }
 
 export default class World {
@@ -59,7 +59,7 @@ export default class World {
   private sceneObjectQueue: RenderEntity[] = [];
 
   showGreed: boolean = true;
-  greed: GreedSettings = {
+  greed: WorldGreed = {
     background: GREED.background || "rgb(50, 50, 50)",
     line: GREED.line || "rgb(255, 255, 255)",
     size: GREED.size || 400,
@@ -263,7 +263,34 @@ export default class World {
     window.localStorage.vpy = this.viewport.globalCoords.y;
   }
 
-  getValues() {
+  private renderChildObjects(renderArguments: RenderWorldArguments): void {
+    const dynamicX =
+      window.innerWidth / 2 -
+      (this.viewport.globalCoords.x * this.greed.size +
+        this.viewport.localCoords.x +
+        0) *
+        this.viewport.zoom;
+
+    const dynamicY =
+      window.innerHeight / 2 -
+      (this.viewport.globalCoords.y * this.greed.size +
+        this.viewport.localCoords.y +
+        0) *
+        this.viewport.zoom;
+
+    this.sceneObjectQueue.map((entity) => {
+      entity.render({
+        ctx: renderArguments.ctx,
+        position: {
+          x: dynamicX,
+          y: dynamicY,
+        },
+        zoom: this.viewport.zoom,
+      });
+    });
+  }
+
+  getViewportValues(): WorldViewport {
     return this.viewport;
   }
 
@@ -289,12 +316,6 @@ export default class World {
     this.drawGreed(renderArguments);
     this.drawCross(renderArguments);
 
-    this.sceneObjectQueue.map((entity) => {
-      entity.render({
-        ctx: renderArguments.ctx,
-        mouse: this.mouse,
-        viewport: this.viewport,
-      });
-    });
+    this.renderChildObjects(renderArguments);
   }
 }
