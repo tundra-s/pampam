@@ -1,7 +1,7 @@
 export const GREED = {
   background: "rgb(50, 50, 50)",
   line: "rgb(255, 255, 255)",
-  size: 100,
+  size: 1000,
 };
 
 export const WORLD = {
