@@ -7,8 +7,8 @@ export const GREED = {
 export const WORLD = {
   zoom: {
     default: 1,
-    min: 0.1,
-    max: 3,
+    min: 0.03,
+    max: 30,
     zoomSpeed: 0.0005,
   },
 };

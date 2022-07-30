@@ -1,5 +1,5 @@
 import { Core, RenderChallengerArgument } from "./lib/core";
-import { RenderEntity } from "./lib/renderEntity";
+import { RenderChunk } from "./lib/renderChunk";
 import World, { Vector } from "./lib/world";
 import Info from "./mock/info";
 
@@ -50,12 +50,20 @@ const init = () => {
 
   const world = new World(viewportPosition);
 
-  const testEntyty = new RenderEntity();
-
   core.addRender(world);
   core.addRender(updateInfoUIWrapper(world));
 
-  world.addToScene(testEntyty);
+
+  const getRand = (dia: number = 100) => {
+    return Math.round(Math.random() * dia - dia / 2);
+  };
+
+  for (let i = 0; i < 100; i += 1) {
+    const testEntyty = new RenderChunk({ x: getRand(), y: getRand() });
+
+    world.addToScene(testEntyty);
+  }
+
 
   // initCoordMemo();
 };

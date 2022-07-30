@@ -1,5 +1,5 @@
 import { GREED, WORLD } from "../data/config";
-import { RenderEntity } from "./renderEntity";
+import { RenderChunk } from "./renderChunk";
 
 interface RenderWorldArguments {
   ctx: CanvasRenderingContext2D;
@@ -56,7 +56,7 @@ export default class World {
     zoom: 2,
   };
 
-  private sceneObjectQueue: RenderEntity[] = [];
+  private sceneObjectQueue: RenderChunk[] = [];
 
   showGreed: boolean = true;
   greed: WorldGreed = {
@@ -294,11 +294,11 @@ export default class World {
     return this.viewport;
   }
 
-  addToScene(addEntity: RenderEntity): void {
+  addToScene(addEntity: RenderChunk): void {
     this.sceneObjectQueue.push(addEntity);
   }
 
-  removeFromScene(removeEntity: RenderEntity): boolean {
+  removeFromScene(removeEntity: RenderChunk): boolean {
     let isRemoveSuccess = false;
 
     this.sceneObjectQueue = this.sceneObjectQueue.filter((entity) => {
