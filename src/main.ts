@@ -1,6 +1,6 @@
 import { Core, RenderChallengerArgument } from "./lib/core";
 import { RenderEntity } from "./lib/renderEntity";
-import World from "./lib/world";
+import World, { Vector } from "./lib/world";
 import Info from "./mock/info";
 
 const info = new Info("Main");
@@ -31,15 +31,12 @@ const _clearLocalStorage = () => {
   window.localStorage.removeItem("vpy");
 };
 
-// TODO: Переписать на World
-//
-// const initCoordMemo = () => {
-//   viewport.globalX = parseInt(window.localStorage.vpx);
-//   viewport.globalY = parseInt(window.localStorage.vpy);
-
-//   viewport.x = viewport.globalX * GREED.size || 0;
-//   viewport.y = viewport.globalY * GREED.size || 0;
-// };
+const initCoordMemo = (): Vector => {
+  return {
+    x: parseInt(window.localStorage.vpx) || 0,
+    y: parseInt(window.localStorage.vpy) || 0,
+  };
+};
 
 const init = () => {
   const canvas = document.createElement("canvas");
@@ -49,7 +46,9 @@ const init = () => {
   const core = new Core(canvas);
 
   if (!core.isCreated()) return;
-  const world = new World();
+  const viewportPosition = initCoordMemo();
+
+  const world = new World(viewportPosition);
 
   const testEntyty = new RenderEntity();
 

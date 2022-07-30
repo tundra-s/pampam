@@ -11,7 +11,7 @@ interface GreedSettings {
   size: number;
 }
 
-interface Vector {
+export interface Vector {
   x: number;
   y: number;
 }
@@ -53,19 +53,22 @@ export default class World {
       x: 0,
       y: 0,
     },
-    zoom: 1,
+    zoom: 2,
   };
 
   private sceneObjectQueue: RenderEntity[] = [];
 
   showGreed: boolean = true;
   greed: GreedSettings = {
-    background: "rgb(50, 50, 50)",
-    line: "rgb(255, 255, 255)",
-    size: 400,
+    background: GREED.background || "rgb(50, 50, 50)",
+    line: GREED.line || "rgb(255, 255, 255)",
+    size: GREED.size || 400,
   };
 
-  constructor() {
+  constructor(globalCoords?: Vector) {
+    this.viewport.globalCoords.x = globalCoords?.x || 0;
+    this.viewport.globalCoords.y = globalCoords?.y || 0;
+
     this.initMouseListeners();
   }
 
@@ -114,12 +117,13 @@ export default class World {
 
     for (let i = 0; i < halfWidth / 2; i += 1) {
       ctx.beginPath();
-      ctx.strokeStyle = GREED.line;
+      ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         halfWidth -
           adaptiveGreedSize * i -
           (adaptiveGreedSize -
-            ((this.viewport.localCoords.x * this.viewport.zoom) %
+            (((this.greed.size - this.viewport.localCoords.x) *
+              this.viewport.zoom) %
               adaptiveGreedSize)),
         0
       );
@@ -127,7 +131,8 @@ export default class World {
         halfWidth -
           adaptiveGreedSize * i -
           (adaptiveGreedSize -
-            ((this.viewport.localCoords.x * this.viewport.zoom) %
+            (((this.greed.size - this.viewport.localCoords.x) *
+              this.viewport.zoom) %
               adaptiveGreedSize)),
         window.innerHeight
       );
@@ -136,18 +141,20 @@ export default class World {
 
     for (let i = 0; i < halfWidth / 2; i += 1) {
       ctx.beginPath();
-      ctx.strokeStyle = GREED.line;
+      ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         halfWidth +
           adaptiveGreedSize * i +
-          ((this.viewport.localCoords.x * this.viewport.zoom) %
+          (((this.greed.size - this.viewport.localCoords.x) *
+            this.viewport.zoom) %
             adaptiveGreedSize),
         0
       );
       ctx.lineTo(
         halfWidth +
           adaptiveGreedSize * i +
-          ((this.viewport.localCoords.x * this.viewport.zoom) %
+          (((this.greed.size - this.viewport.localCoords.x) *
+            this.viewport.zoom) %
             adaptiveGreedSize),
         window.innerHeight
       );
@@ -156,44 +163,40 @@ export default class World {
 
     for (let i = 0; i < halfHeight / 2; i += 1) {
       ctx.beginPath();
-      ctx.strokeStyle = GREED.line;
+      ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         0,
         halfHeight -
           adaptiveGreedSize * i -
-          (adaptiveGreedSize -
-            ((this.viewport.localCoords.y * this.viewport.zoom) %
-              adaptiveGreedSize))
+          ((this.viewport.localCoords.y * this.viewport.zoom) %
+            adaptiveGreedSize)
       );
       ctx.lineTo(
         window.innerWidth,
         halfHeight -
           adaptiveGreedSize * i -
-          (adaptiveGreedSize -
-            ((this.viewport.localCoords.y * this.viewport.zoom) %
-              adaptiveGreedSize))
+          ((this.viewport.localCoords.y * this.viewport.zoom) %
+            adaptiveGreedSize)
       );
       ctx.stroke();
     }
 
     for (let i = 1; i < halfHeight / 2; i += 1) {
       ctx.beginPath();
-      ctx.strokeStyle = GREED.line;
+      ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         0,
         halfHeight +
           adaptiveGreedSize * i -
-          (adaptiveGreedSize -
-            ((this.viewport.localCoords.y * this.viewport.zoom) %
-              adaptiveGreedSize))
+          ((this.viewport.localCoords.y * this.viewport.zoom) %
+            adaptiveGreedSize)
       );
       ctx.lineTo(
         window.innerWidth,
         halfHeight +
           adaptiveGreedSize * i -
-          (adaptiveGreedSize -
-            ((this.viewport.localCoords.y * this.viewport.zoom) %
-              adaptiveGreedSize))
+          ((this.viewport.localCoords.y * this.viewport.zoom) %
+            adaptiveGreedSize)
       );
       ctx.stroke();
     }
@@ -225,17 +228,36 @@ export default class World {
     this.mouse.buffer.x = e.clientX;
     this.mouse.buffer.y = e.clientY;
 
-    this.viewport.localCoords.x += dx;
-    this.viewport.localCoords.y += dy;
+    this.viewport.localCoords.x -= dx / this.viewport.zoom;
+    this.viewport.localCoords.y -= dy / this.viewport.zoom;
 
-    this.viewport.globalCoords.x = Math.round(
-      this.viewport.localCoords.x / GREED.size
-    );
-    this.viewport.globalCoords.y = Math.round(
-      this.viewport.localCoords.y / GREED.size
-    );
+    if (this.viewport.localCoords.x / this.greed.size >= 1) {
+      this.viewport.globalCoords.x += Math.round(
+        this.viewport.localCoords.x / this.greed.size
+      );
 
-    console.log(this.viewport.globalCoords);
+      this.viewport.localCoords.x =
+        this.viewport.localCoords.x % this.greed.size;
+    } else if (this.viewport.localCoords.x < 0) {
+      this.viewport.localCoords.x =
+        this.greed.size + this.viewport.localCoords.x;
+
+      this.viewport.globalCoords.x -= 1;
+    }
+
+    if (this.viewport.localCoords.y / this.greed.size >= 1) {
+      this.viewport.globalCoords.y += Math.round(
+        this.viewport.localCoords.y / this.greed.size
+      );
+
+      this.viewport.localCoords.y =
+        this.viewport.localCoords.y % this.greed.size;
+    } else if (this.viewport.localCoords.y < 0) {
+      this.viewport.localCoords.y =
+        this.greed.size + this.viewport.localCoords.y;
+
+      this.viewport.globalCoords.y -= 1;
+    }
 
     window.localStorage.vpx = this.viewport.globalCoords.x;
     window.localStorage.vpy = this.viewport.globalCoords.y;
