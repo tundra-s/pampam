@@ -1,24 +1,29 @@
 import { Core, RenderChallengerArgument } from "./lib/core";
+import { RenderEntity } from "./lib/renderEntity";
 import World from "./lib/world";
 import Info from "./mock/info";
 
 const info = new Info("Main");
 
 // TODO переписать на World
-const updateInfoUI = () => {
-  // info.log("viewportX", viewport.x);
-  // info.log("viewportY", viewport.y);
-  // info.log("iii", "----");
-  // info.log("zoom", viewport.zoom);
-  // info.log("ii", "----");
-  // info.log("globalX", viewport.globalX);
-  // info.log("globalY", viewport.globalY);
+const updateInfoUI = (world: World) => {
+  const worldValues = world.getValues();
+
+  info.log("viewportX", worldValues.localCoords.x);
+  info.log("viewportY", worldValues.localCoords.y);
+  info.log("iii", "----");
+  info.log("zoom", worldValues.zoom);
+  info.log("ii", "----");
+  info.log("globalX", worldValues.globalCoords.x);
+  info.log("globalY", worldValues.globalCoords.y);
 };
 
-const updateInfoUIWrapper = {
-  render: ({ ctx }: RenderChallengerArgument) => {
-    updateInfoUI();
-  },
+const updateInfoUIWrapper = (world: World) => {
+  return {
+    render: ({ ctx }: RenderChallengerArgument) => {
+      updateInfoUI(world);
+    },
+  };
 };
 
 const _clearLocalStorage = () => {
@@ -44,11 +49,14 @@ const init = () => {
   const core = new Core(canvas);
 
   if (!core.isCreated()) return;
-
   const world = new World();
 
+  const testEntyty = new RenderEntity();
+
   core.addRender(world);
-  core.addRender(updateInfoUIWrapper);
+  core.addRender(updateInfoUIWrapper(world));
+
+  world.addToScene(testEntyty);
 
   // initCoordMemo();
 };

@@ -1,4 +1,5 @@
 import { GREED, WORLD } from "../data/config";
+import { RenderEntity } from "./renderEntity";
 
 interface RenderWorldArguments {
   ctx: CanvasRenderingContext2D;
@@ -15,19 +16,24 @@ interface Vector {
   y: number;
 }
 
-interface Mouse {
+interface SceneObject {
+  position: Vector;
+  size: number;
+}
+
+export interface WorldMouse {
   buffer: Vector;
   actual: Vector;
 }
 
-interface Viewport {
+export interface WorldViewport {
   localCoords: Vector;
   globalCoords: Vector;
   zoom: number;
 }
 
 export default class World {
-  private mouse: Mouse = {
+  private mouse: WorldMouse = {
     buffer: {
       x: 0,
       y: 0,
@@ -38,7 +44,7 @@ export default class World {
     },
   };
 
-  private viewport: Viewport = {
+  private viewport: WorldViewport = {
     localCoords: {
       x: 0,
       y: 0,
@@ -50,11 +56,13 @@ export default class World {
     zoom: 1,
   };
 
+  private sceneObjectQueue: RenderEntity[] = [];
+
   showGreed: boolean = true;
   greed: GreedSettings = {
     background: "rgb(50, 50, 50)",
     line: "rgb(255, 255, 255)",
-    size: 100,
+    size: 400,
   };
 
   constructor() {
@@ -211,7 +219,7 @@ export default class World {
     ctx.stroke();
   }
 
-  private mouseMoveListener(e: MouseEvent) {
+  private mouseMoveListener(e: MouseEvent): void {
     const dx = e.clientX - this.mouse.buffer.x;
     const dy = e.clientY - this.mouse.buffer.y;
     this.mouse.buffer.x = e.clientX;
@@ -220,16 +228,51 @@ export default class World {
     this.viewport.localCoords.x += dx;
     this.viewport.localCoords.y += dy;
 
-    this.viewport.globalCoords.x = Math.round(this.mouse.actual.x / GREED.size);
-    this.viewport.globalCoords.y = Math.round(this.mouse.actual.y / GREED.size);
+    this.viewport.globalCoords.x = Math.round(
+      this.viewport.localCoords.x / GREED.size
+    );
+    this.viewport.globalCoords.y = Math.round(
+      this.viewport.localCoords.y / GREED.size
+    );
+
+    console.log(this.viewport.globalCoords);
 
     window.localStorage.vpx = this.viewport.globalCoords.x;
     window.localStorage.vpy = this.viewport.globalCoords.y;
+  }
+
+  getValues() {
+    return this.viewport;
+  }
+
+  addToScene(addEntity: RenderEntity): void {
+    this.sceneObjectQueue.push(addEntity);
+  }
+
+  removeFromScene(removeEntity: RenderEntity): boolean {
+    let isRemoveSuccess = false;
+
+    this.sceneObjectQueue = this.sceneObjectQueue.filter((entity) => {
+      if (entity == removeEntity) {
+        isRemoveSuccess = true;
+        return false;
+      }
+    });
+
+    return isRemoveSuccess;
   }
 
   render(renderArguments: RenderWorldArguments): void {
     this.drawBackground(renderArguments);
     this.drawGreed(renderArguments);
     this.drawCross(renderArguments);
+
+    this.sceneObjectQueue.map((entity) => {
+      entity.render({
+        ctx: renderArguments.ctx,
+        mouse: this.mouse,
+        viewport: this.viewport,
+      });
+    });
   }
 }
