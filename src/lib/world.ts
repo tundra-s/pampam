@@ -45,7 +45,6 @@ interface RenderQueue {
 export type OnChunkLoaded = (coords: Vector) => void;
 
 export default class World {
-  private trottle: boolean = false;
   private mouse: WorldMouse = {
     buffer: {
       x: 0,
@@ -60,12 +59,12 @@ export default class World {
   private viewport: WorldViewport = {
     scene: {
       renderSize: {
-        x: window.innerWidth * 0.3,
-        y: window.innerHeight * 0.3,
+        x: window.innerWidth * 0.15,
+        y: window.innerHeight * 0.15,
       },
       preloadSize: {
-        x: window.innerWidth * 0.5,
-        y: window.innerHeight * 0.5,
+        x: window.innerWidth * 0.3,
+        y: window.innerHeight * 0.3,
       },
     },
     localCoords: {
@@ -380,6 +379,21 @@ export default class World {
       min: this.viewport.globalCoords.y - limit.y,
       max: this.viewport.globalCoords.y + limit.y,
     };
+
+    for (let line in this.sceneObjectQueue) {
+      for (let cell in this.sceneObjectQueue[line]) {
+        if (this.sceneObjectQueue[line][cell] === undefined) return;
+
+        const coords = this.sceneObjectQueue[line][cell].getCoord();
+        const deltaX =
+          Math.abs(coords.x - this.viewport.globalCoords.x) > limit.x;
+        const deltaY =
+          Math.abs(coords.y - this.viewport.globalCoords.y) > limit.y;
+
+        if (deltaX || deltaY)
+          this.removeFromScene(this.sceneObjectQueue[line][cell]);
+      }
+    }
 
     for (let i = limitX.min; i < limitX.max; i += 1) {
       for (let j = limitY.min; j < limitY.max; j += 1) {
