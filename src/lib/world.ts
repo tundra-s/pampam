@@ -51,12 +51,12 @@ export default class World {
   private viewport: WorldViewport = {
     scene: {
       renderSize: {
-        x: 400,
-        y: 400,
+        x: 550,
+        y: 330,
       },
       preloadSize: {
-        x: 600,
-        y: 600,
+        x: 880,
+        y: 660,
       },
     },
     localCoords: {
@@ -228,11 +228,39 @@ export default class World {
 
   private drawCross({ ctx }: RenderWorldArguments): void {
     ctx.beginPath();
-    ctx.strokeStyle = "rgb(0, 255, 0)";
+    ctx.strokeStyle = "rgb(255, 255, 0)";
     ctx.moveTo(window.innerWidth / 2, 0);
     ctx.lineTo(window.innerWidth / 2, window.innerHeight);
     ctx.moveTo(0, window.innerHeight / 2);
     ctx.lineTo(window.innerWidth, window.innerHeight / 2);
+    ctx.stroke();
+  }
+
+  private drawRenderZone({ ctx }: RenderWorldArguments): void {
+    const x = window.innerWidth / 2;
+    const y = window.innerHeight / 2;
+    ctx.beginPath();
+    ctx.strokeStyle = "rgb(0, 255, 255)";
+    ctx.rect(
+      x - this.viewport.scene.renderSize.x / 2,
+      y - this.viewport.scene.renderSize.y / 2,
+      this.viewport.scene.renderSize.x,
+      this.viewport.scene.renderSize.y
+    );
+    ctx.stroke();
+  }
+
+  private drawDownloadZone({ ctx }: RenderWorldArguments): void {
+    const x = window.innerWidth / 2;
+    const y = window.innerHeight / 2;
+    ctx.beginPath();
+    ctx.strokeStyle = "rgb(255, 0, 255)";
+    ctx.rect(
+      x - this.viewport.scene.preloadSize.x / 2,
+      y - this.viewport.scene.preloadSize.y / 2,
+      this.viewport.scene.preloadSize.x,
+      this.viewport.scene.preloadSize.y
+    );
     ctx.stroke();
   }
 
@@ -328,8 +356,11 @@ export default class World {
   render(renderArguments: RenderWorldArguments): void {
     this.drawBackground(renderArguments);
     this.drawGreed(renderArguments);
-    this.drawCross(renderArguments);
 
     this.renderChildObjects(renderArguments);
+
+    this.drawRenderZone(renderArguments);
+    this.drawDownloadZone(renderArguments);
+    this.drawCross(renderArguments);
   }
 }
