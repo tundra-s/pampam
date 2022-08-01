@@ -21,6 +21,10 @@ export interface WorldMouse {
 }
 
 export interface WorldViewport {
+  scene: {
+    renderSize: Vector;
+    preloadSize: Vector;
+  };
   localCoords: Vector;
   globalCoords: Vector;
   zoom: number;
@@ -45,6 +49,16 @@ export default class World {
   };
 
   private viewport: WorldViewport = {
+    scene: {
+      renderSize: {
+        x: 400,
+        y: 400,
+      },
+      preloadSize: {
+        x: 600,
+        y: 600,
+      },
+    },
     localCoords: {
       x: 0,
       y: 0,

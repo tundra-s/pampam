@@ -1,3 +1,4 @@
+import { GREED } from "./data/config";
 import { Core, RenderChallengerArgument } from "./lib/core";
 import { RenderChunk } from "./lib/renderChunk";
 import World, { Vector } from "./lib/world";
@@ -53,19 +54,19 @@ const init = () => {
   core.addRender(world);
   core.addRender(updateInfoUIWrapper(world));
 
+  const SEED_X = 10;
+  const SEED_Y = 5;
 
-  const getRand = (dia: number = 100) => {
-    return Math.round(Math.random() * dia - dia / 2);
-  };
+  for (let i = 0; i < SEED_X; i += 1) {
+    for (let j = 0; j < SEED_Y; j += 1) {
+      const testEntyty = new RenderChunk({
+        x: i - SEED_X / 2,
+        y: j - SEED_Y / 2,
+      });
 
-  for (let i = 0; i < 100; i += 1) {
-    const testEntyty = new RenderChunk({ x: getRand(), y: getRand() });
-
-    world.addToScene(testEntyty);
+      world.addToScene(testEntyty);
+    }
   }
-
-
-  // initCoordMemo();
 };
 
 window.onload = init;

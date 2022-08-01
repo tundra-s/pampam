@@ -24,15 +24,31 @@ export class RenderChunk {
   }
 
   private draw({ ctx, position, zoom }: RenderChunkArguments): void {
+    let x = position.x + GREED.size * this.position.global.x * zoom;
+    let y =
+      position.y +
+      GREED.size * this.position.global.y * zoom -
+      (GREED.size * zoom) / 2;
+
     ctx.beginPath();
-    ctx.fillStyle = "rgb(255, 0, 0)";
-    ctx.rect(
-      position.x + GREED.size * this.position.global.x * zoom,
-      position.y + GREED.size * this.position.global.y * zoom,
-      GREED.size * zoom,
-      GREED.size * zoom
-    );
+    ctx.fillStyle = "rgb(30, 50, 30)";
+    ctx.rect(x, y, GREED.size * zoom, GREED.size * zoom);
     ctx.fill();
+
+    ctx.font = `${120 * zoom}px Arial`;
+    ctx.fillStyle = "rgb(255, 255, 255)";
+    ctx.fillText(
+      `G [ ${Math.round(this.position.global.x)} : ${Math.round(
+        this.position.global.y
+      )} ]`,
+      x + (GREED.size * zoom) / 6,
+      y + (GREED.size * zoom) / 3
+    );
+    ctx.fillText(
+      `L [${Math.round(x)} : ${Math.round(y)}]`,
+      x + (GREED.size * zoom) / 6,
+      y + (GREED.size * zoom) / 2
+    );
   }
 
   render(renderArguments: RenderChunkArguments): void {
