@@ -36,6 +36,8 @@ export interface WorldGreed {
   size: number;
 }
 
+export type OnChunkLoaded = (coords: Vector) => void;
+
 export default class World {
   private mouse: WorldMouse = {
     buffer: {
@@ -70,7 +72,7 @@ export default class World {
     zoom: 2,
   };
 
-  private sceneObjectQueue: RenderChunk[] = [];
+  private sceneObjectQueue: RenderChunk[][] = [];
 
   showGreed: boolean = true;
   greed: WorldGreed = {
@@ -337,20 +339,31 @@ export default class World {
   }
 
   addToScene(addEntity: RenderChunk): void {
-    this.sceneObjectQueue.push(addEntity);
+    const globalCoords = addEntity.getCoord();
+
+    if (!Array.isArray(this.sceneObjectQueue[globalCoords.x])) {
+      this.sceneObjectQueue[globalCoords.x] = [];
+    }
+
+    this.sceneObjectQueue[globalCoords.x][globalCoords.y] = addEntity;
   }
 
   removeFromScene(removeEntity: RenderChunk): boolean {
     let isRemoveSuccess = false;
 
-    this.sceneObjectQueue = this.sceneObjectQueue.filter((entity) => {
-      if (entity == removeEntity) {
-        isRemoveSuccess = true;
-        return false;
-      }
-    });
+    // TODO переписать на двухуровневый массив
+    // this.sceneObjectQueue = this.sceneObjectQueue.filter((entity) => {
+    //   if (entity == removeEntity) {
+    //     isRemoveSuccess = true;
+    //     return false;
+    //   }
+    // });
 
     return isRemoveSuccess;
+  }
+
+  requestChunk(onChunkQuerry: OnChunkLoaded): void {
+    onChunkQuerry(this.viewport.globalCoords);
   }
 
   render(renderArguments: RenderWorldArguments): void {

@@ -51,6 +51,10 @@ export class RenderChunk {
     );
   }
 
+  getCoord(): Vector {
+    return this.position.global;
+  }
+
   render(renderArguments: RenderChunkArguments): void {
     this.draw(renderArguments);
   }
