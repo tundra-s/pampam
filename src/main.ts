@@ -44,8 +44,8 @@ const requestDB = ({ x, y }: Vector) =>
 
     setTimeout(() => {
       console.log(`Response server [${x}; ${y}]`);
-      resolve(new RenderChunk({ x, y }));
-    }, 1000 + Math.random() * 2000);
+      resolve(new RenderChunk({ x, y }, "loaded"));
+    }, Math.random() * 1000);
   });
 
 const init = () => {
@@ -63,28 +63,9 @@ const init = () => {
   core.addRender(world);
   core.addRender(updateInfoUIWrapper(world));
 
-  // TEST
-  // const SEED_X = 10;
-  // const SEED_Y = 5;
-  // const DENCITY = 1;
-
-  // for (let i = 0; i < SEED_X; i += 1) {
-  //   for (let j = 0; j < SEED_Y; j += 1) {
-  //     if (DENCITY > Math.random()) {
-  //       const testEntyty = new RenderChunk({
-  //         x: i - SEED_X / 2,
-  //         y: j - SEED_Y / 2,
-  //       });
-
-  //       world.addToScene(testEntyty);
-  //     }
-  //   }
-  // }
-
-  // TEST
+  //TODO delete test
   world.requestChunk(({ x, y }) => {
-    requestDB({ x: 5, y: 5 }).then((result) => {
-      console.log("add");
+    requestDB({ x, y }).then((result) => {
       world.addToScene(result);
     });
   });

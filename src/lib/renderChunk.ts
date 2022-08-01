@@ -11,6 +11,8 @@ interface RenderChunkPosition {
   global: Vector;
 }
 
+type RenderStatus = "idle" | "delete" | "loaded";
+
 export class RenderChunk {
   private position: RenderChunkPosition = {
     global: {
@@ -18,19 +20,31 @@ export class RenderChunk {
       y: 0,
     },
   };
+  private status: RenderStatus = "idle";
 
-  constructor(position: Vector) {
+  constructor(position: Vector, status?: RenderStatus) {
     this.position.global = position;
+
+    if (status) this.status = status;
   }
 
   private draw({ ctx, position, zoom }: RenderChunkArguments): void {
     let x = position.x + GREED.size * this.position.global.x * zoom;
     let y = position.y + GREED.size * this.position.global.y * zoom;
 
-    ctx.beginPath();
-    ctx.fillStyle = "rgb(30, 50, 30)";
-    ctx.rect(x, y, GREED.size * zoom, GREED.size * zoom);
-    ctx.fill();
+    if (this.status === "loaded") {
+      ctx.beginPath();
+      ctx.fillStyle = "rgb(30, 60, 30)";
+      ctx.rect(x, y, GREED.size * zoom, GREED.size * zoom);
+      ctx.fill();
+    }
+
+    if (this.status === "idle") {
+      ctx.beginPath();
+      ctx.fillStyle = "rgb(60, 30, 50)";
+      ctx.rect(x, y, GREED.size * zoom, GREED.size * zoom);
+      ctx.fill();
+    }
 
     ctx.font = `${120 * zoom}px Arial`;
     ctx.fillStyle = "rgb(255, 255, 255)";
@@ -46,6 +60,14 @@ export class RenderChunk {
       x + (GREED.size * zoom) / 6,
       y + (GREED.size * zoom) / 2
     );
+  }
+
+  setStatus(status: RenderStatus) {
+    return (this.status = status);
+  }
+
+  getStatus(): RenderStatus {
+    return this.status;
   }
 
   getCoord(): Vector {

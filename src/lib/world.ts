@@ -45,6 +45,7 @@ interface RenderQueue {
 export type OnChunkLoaded = (coords: Vector) => void;
 
 export default class World {
+  private trottle: boolean = false;
   private mouse: WorldMouse = {
     buffer: {
       x: 0,
@@ -59,12 +60,12 @@ export default class World {
   private viewport: WorldViewport = {
     scene: {
       renderSize: {
-        x: window.innerWidth * 0.55,
-        y: window.innerHeight * 0.6,
+        x: window.innerWidth * 0.3,
+        y: window.innerHeight * 0.3,
       },
       preloadSize: {
-        x: window.innerWidth * 0.7,
-        y: window.innerHeight * 0.8,
+        x: window.innerWidth * 0.5,
+        y: window.innerHeight * 0.5,
       },
     },
     localCoords: {
@@ -75,8 +76,10 @@ export default class World {
       x: 0,
       y: 0,
     },
-    zoom: 2,
+    zoom: WORLD.zoom.default || 1,
   };
+
+  private handleRequestChunk: OnChunkLoaded = (coords: Vector) => {};
 
   private sceneObjectQueue: RenderQueue = {};
 
@@ -353,6 +356,42 @@ export default class World {
     }
   }
 
+  private checkChunkZones(): void {
+    // приведем границу к гриду
+    const limit: Vector = {
+      x: Math.ceil(
+        this.viewport.scene.preloadSize.x /
+          2 /
+          (this.greed.size * this.viewport.zoom)
+      ),
+      y: Math.ceil(
+        this.viewport.scene.preloadSize.y /
+          2 /
+          (this.greed.size * this.viewport.zoom)
+      ),
+    };
+
+    const limitX = {
+      min: this.viewport.globalCoords.x - limit.x,
+      max: this.viewport.globalCoords.x + limit.x,
+    };
+
+    const limitY = {
+      min: this.viewport.globalCoords.y - limit.y,
+      max: this.viewport.globalCoords.y + limit.y,
+    };
+
+    for (let i = limitX.min; i < limitX.max; i += 1) {
+      for (let j = limitY.min; j < limitY.max; j += 1) {
+        const line = this.sceneObjectQueue[i.toString(10)];
+
+        if (line === undefined || line[j.toString(10)] === undefined) {
+          this.handleRequestChunk({ x: i, y: j });
+        }
+      }
+    }
+  }
+
   getViewportValues(): WorldViewport {
     return this.viewport;
   }
@@ -360,8 +399,8 @@ export default class World {
   addToScene(addEntity: RenderChunk): void {
     const globalCoords = addEntity.getCoord();
 
-    if (!this.sceneObjectQueue[globalCoords.x.toString()]) {
-      this.sceneObjectQueue[globalCoords.x] = {};
+    if (!this.sceneObjectQueue[globalCoords.x.toString(10)]) {
+      this.sceneObjectQueue[globalCoords.x.toString(10)] = {};
     }
 
     this.sceneObjectQueue[globalCoords.x.toString(10)][
@@ -386,13 +425,26 @@ export default class World {
   }
 
   requestChunk(onChunkQuerry: OnChunkLoaded): void {
-    onChunkQuerry(this.viewport.globalCoords);
+    this.handleRequestChunk = (coords: Vector) => {
+      const idleChunk = new RenderChunk({
+        x: coords.x,
+        y: coords.y,
+      });
+
+      this.addToScene(idleChunk);
+
+      onChunkQuerry({
+        x: coords.x,
+        y: coords.y,
+      });
+    };
   }
 
   render(renderArguments: RenderWorldArguments): void {
     this.drawBackground(renderArguments);
     this.drawGreed(renderArguments);
 
+    this.checkChunkZones();
     this.renderChildObjects(renderArguments);
 
     this.drawRenderZone(renderArguments);
