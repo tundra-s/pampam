@@ -1,33 +1,43 @@
 import { GREED, WORLD } from "../data/config";
+import { RenderChunk } from "./renderChunk";
 
 interface RenderWorldArguments {
   ctx: CanvasRenderingContext2D;
 }
 
-interface GreedSettings {
-  background: string;
-  line: string;
-  size: number;
-}
-
-interface Vector {
+export interface Vector {
   x: number;
   y: number;
 }
 
-interface Mouse {
+interface SceneObject {
+  position: Vector;
+  zoom: number;
+}
+
+export interface WorldMouse {
   buffer: Vector;
   actual: Vector;
 }
 
-interface Viewport {
+export interface WorldViewport {
+  scene: {
+    renderSize: Vector;
+    preloadSize: Vector;
+  };
   localCoords: Vector;
   globalCoords: Vector;
   zoom: number;
 }
 
+export interface WorldGreed {
+  background: string;
+  line: string;
+  size: number;
+}
+
 export default class World {
-  private mouse: Mouse = {
+  private mouse: WorldMouse = {
     buffer: {
       x: 0,
       y: 0,
@@ -38,7 +48,17 @@ export default class World {
     },
   };
 
-  private viewport: Viewport = {
+  private viewport: WorldViewport = {
+    scene: {
+      renderSize: {
+        x: 400,
+        y: 400,
+      },
+      preloadSize: {
+        x: 600,
+        y: 600,
+      },
+    },
     localCoords: {
       x: 0,
       y: 0,
@@ -47,17 +67,22 @@ export default class World {
       x: 0,
       y: 0,
     },
-    zoom: 1,
+    zoom: 2,
   };
+
+  private sceneObjectQueue: RenderChunk[] = [];
 
   showGreed: boolean = true;
-  greed: GreedSettings = {
-    background: "rgb(50, 50, 50)",
-    line: "rgb(255, 255, 255)",
-    size: 100,
+  greed: WorldGreed = {
+    background: GREED.background || "rgb(50, 50, 50)",
+    line: GREED.line || "rgb(255, 255, 255)",
+    size: GREED.size || 400,
   };
 
-  constructor() {
+  constructor(globalCoords?: Vector) {
+    this.viewport.globalCoords.x = globalCoords?.x || 0;
+    this.viewport.globalCoords.y = globalCoords?.y || 0;
+
     this.initMouseListeners();
   }
 
@@ -106,12 +131,13 @@ export default class World {
 
     for (let i = 0; i < halfWidth / 2; i += 1) {
       ctx.beginPath();
-      ctx.strokeStyle = GREED.line;
+      ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         halfWidth -
           adaptiveGreedSize * i -
           (adaptiveGreedSize -
-            ((this.viewport.localCoords.x * this.viewport.zoom) %
+            (((this.greed.size - this.viewport.localCoords.x) *
+              this.viewport.zoom) %
               adaptiveGreedSize)),
         0
       );
@@ -119,7 +145,8 @@ export default class World {
         halfWidth -
           adaptiveGreedSize * i -
           (adaptiveGreedSize -
-            ((this.viewport.localCoords.x * this.viewport.zoom) %
+            (((this.greed.size - this.viewport.localCoords.x) *
+              this.viewport.zoom) %
               adaptiveGreedSize)),
         window.innerHeight
       );
@@ -128,18 +155,20 @@ export default class World {
 
     for (let i = 0; i < halfWidth / 2; i += 1) {
       ctx.beginPath();
-      ctx.strokeStyle = GREED.line;
+      ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         halfWidth +
           adaptiveGreedSize * i +
-          ((this.viewport.localCoords.x * this.viewport.zoom) %
+          (((this.greed.size - this.viewport.localCoords.x) *
+            this.viewport.zoom) %
             adaptiveGreedSize),
         0
       );
       ctx.lineTo(
         halfWidth +
           adaptiveGreedSize * i +
-          ((this.viewport.localCoords.x * this.viewport.zoom) %
+          (((this.greed.size - this.viewport.localCoords.x) *
+            this.viewport.zoom) %
             adaptiveGreedSize),
         window.innerHeight
       );
@@ -148,44 +177,40 @@ export default class World {
 
     for (let i = 0; i < halfHeight / 2; i += 1) {
       ctx.beginPath();
-      ctx.strokeStyle = GREED.line;
+      ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         0,
         halfHeight -
           adaptiveGreedSize * i -
-          (adaptiveGreedSize -
-            ((this.viewport.localCoords.y * this.viewport.zoom) %
-              adaptiveGreedSize))
+          ((this.viewport.localCoords.y * this.viewport.zoom) %
+            adaptiveGreedSize)
       );
       ctx.lineTo(
         window.innerWidth,
         halfHeight -
           adaptiveGreedSize * i -
-          (adaptiveGreedSize -
-            ((this.viewport.localCoords.y * this.viewport.zoom) %
-              adaptiveGreedSize))
+          ((this.viewport.localCoords.y * this.viewport.zoom) %
+            adaptiveGreedSize)
       );
       ctx.stroke();
     }
 
     for (let i = 1; i < halfHeight / 2; i += 1) {
       ctx.beginPath();
-      ctx.strokeStyle = GREED.line;
+      ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         0,
         halfHeight +
           adaptiveGreedSize * i -
-          (adaptiveGreedSize -
-            ((this.viewport.localCoords.y * this.viewport.zoom) %
-              adaptiveGreedSize))
+          ((this.viewport.localCoords.y * this.viewport.zoom) %
+            adaptiveGreedSize)
       );
       ctx.lineTo(
         window.innerWidth,
         halfHeight +
           adaptiveGreedSize * i -
-          (adaptiveGreedSize -
-            ((this.viewport.localCoords.y * this.viewport.zoom) %
-              adaptiveGreedSize))
+          ((this.viewport.localCoords.y * this.viewport.zoom) %
+            adaptiveGreedSize)
       );
       ctx.stroke();
     }
@@ -211,25 +236,100 @@ export default class World {
     ctx.stroke();
   }
 
-  private mouseMoveListener(e: MouseEvent) {
+  private mouseMoveListener(e: MouseEvent): void {
     const dx = e.clientX - this.mouse.buffer.x;
     const dy = e.clientY - this.mouse.buffer.y;
     this.mouse.buffer.x = e.clientX;
     this.mouse.buffer.y = e.clientY;
 
-    this.viewport.localCoords.x += dx;
-    this.viewport.localCoords.y += dy;
+    this.viewport.localCoords.x -= dx / this.viewport.zoom;
+    this.viewport.localCoords.y -= dy / this.viewport.zoom;
 
-    this.viewport.globalCoords.x = Math.round(this.mouse.actual.x / GREED.size);
-    this.viewport.globalCoords.y = Math.round(this.mouse.actual.y / GREED.size);
+    if (this.viewport.localCoords.x / this.greed.size >= 1) {
+      this.viewport.globalCoords.x += Math.round(
+        this.viewport.localCoords.x / this.greed.size
+      );
+
+      this.viewport.localCoords.x =
+        this.viewport.localCoords.x % this.greed.size;
+    } else if (this.viewport.localCoords.x < 0) {
+      this.viewport.localCoords.x =
+        this.greed.size + this.viewport.localCoords.x;
+
+      this.viewport.globalCoords.x -= 1;
+    }
+
+    if (this.viewport.localCoords.y / this.greed.size >= 1) {
+      this.viewport.globalCoords.y += Math.round(
+        this.viewport.localCoords.y / this.greed.size
+      );
+
+      this.viewport.localCoords.y =
+        this.viewport.localCoords.y % this.greed.size;
+    } else if (this.viewport.localCoords.y < 0) {
+      this.viewport.localCoords.y =
+        this.greed.size + this.viewport.localCoords.y;
+
+      this.viewport.globalCoords.y -= 1;
+    }
 
     window.localStorage.vpx = this.viewport.globalCoords.x;
     window.localStorage.vpy = this.viewport.globalCoords.y;
+  }
+
+  private renderChildObjects(renderArguments: RenderWorldArguments): void {
+    const dynamicX =
+      window.innerWidth / 2 -
+      (this.viewport.globalCoords.x * this.greed.size +
+        this.viewport.localCoords.x +
+        0) *
+        this.viewport.zoom;
+
+    const dynamicY =
+      window.innerHeight / 2 -
+      (this.viewport.globalCoords.y * this.greed.size +
+        this.viewport.localCoords.y +
+        0) *
+        this.viewport.zoom;
+
+    this.sceneObjectQueue.map((entity) => {
+      entity.render({
+        ctx: renderArguments.ctx,
+        position: {
+          x: dynamicX,
+          y: dynamicY,
+        },
+        zoom: this.viewport.zoom,
+      });
+    });
+  }
+
+  getViewportValues(): WorldViewport {
+    return this.viewport;
+  }
+
+  addToScene(addEntity: RenderChunk): void {
+    this.sceneObjectQueue.push(addEntity);
+  }
+
+  removeFromScene(removeEntity: RenderChunk): boolean {
+    let isRemoveSuccess = false;
+
+    this.sceneObjectQueue = this.sceneObjectQueue.filter((entity) => {
+      if (entity == removeEntity) {
+        isRemoveSuccess = true;
+        return false;
+      }
+    });
+
+    return isRemoveSuccess;
   }
 
   render(renderArguments: RenderWorldArguments): void {
     this.drawBackground(renderArguments);
     this.drawGreed(renderArguments);
     this.drawCross(renderArguments);
+
+    this.renderChildObjects(renderArguments);
   }
 }
