@@ -70,11 +70,5 @@ module.exports = {
         </html>
       `,
     }),
-    new JavaScriptObfuscator({
-      rotateUnicodeArray: true,
-    }),
   ],
-  optimization: {
-    minimizer: [new UglifyJsPlugin()],
-  },
 };
