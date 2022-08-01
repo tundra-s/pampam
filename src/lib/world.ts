@@ -36,6 +36,12 @@ export interface WorldGreed {
   size: number;
 }
 
+interface RenderQueue {
+  [key: string]: {
+    [key: string]: RenderChunk;
+  };
+}
+
 export type OnChunkLoaded = (coords: Vector) => void;
 
 export default class World {
@@ -53,12 +59,12 @@ export default class World {
   private viewport: WorldViewport = {
     scene: {
       renderSize: {
-        x: 550,
-        y: 330,
+        x: window.innerWidth * 0.55,
+        y: window.innerHeight * 0.6,
       },
       preloadSize: {
-        x: 880,
-        y: 660,
+        x: window.innerWidth * 0.7,
+        y: window.innerHeight * 0.8,
       },
     },
     localCoords: {
@@ -72,7 +78,7 @@ export default class World {
     zoom: 2,
   };
 
-  private sceneObjectQueue: RenderChunk[][] = [];
+  private sceneObjectQueue: RenderQueue = {};
 
   showGreed: boolean = true;
   greed: WorldGreed = {
@@ -133,6 +139,7 @@ export default class World {
 
     for (let i = 0; i < halfWidth / 2; i += 1) {
       ctx.beginPath();
+      ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         halfWidth -
@@ -157,6 +164,7 @@ export default class World {
 
     for (let i = 0; i < halfWidth / 2; i += 1) {
       ctx.beginPath();
+      ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         halfWidth +
@@ -179,6 +187,7 @@ export default class World {
 
     for (let i = 0; i < halfHeight / 2; i += 1) {
       ctx.beginPath();
+      ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         0,
@@ -199,6 +208,7 @@ export default class World {
 
     for (let i = 1; i < halfHeight / 2; i += 1) {
       ctx.beginPath();
+      ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         0,
@@ -230,6 +240,7 @@ export default class World {
 
   private drawCross({ ctx }: RenderWorldArguments): void {
     ctx.beginPath();
+    ctx.lineWidth = 2;
     ctx.strokeStyle = "rgb(255, 255, 0)";
     ctx.moveTo(window.innerWidth / 2, 0);
     ctx.lineTo(window.innerWidth / 2, window.innerHeight);
@@ -242,6 +253,7 @@ export default class World {
     const x = window.innerWidth / 2;
     const y = window.innerHeight / 2;
     ctx.beginPath();
+    ctx.lineWidth = 2;
     ctx.strokeStyle = "rgb(0, 255, 255)";
     ctx.rect(
       x - this.viewport.scene.renderSize.x / 2,
@@ -257,6 +269,7 @@ export default class World {
     const y = window.innerHeight / 2;
     ctx.beginPath();
     ctx.strokeStyle = "rgb(255, 0, 255)";
+    ctx.lineWidth = 2;
     ctx.rect(
       x - this.viewport.scene.preloadSize.x / 2,
       y - this.viewport.scene.preloadSize.y / 2,
@@ -322,16 +335,22 @@ export default class World {
         0) *
         this.viewport.zoom;
 
-    this.sceneObjectQueue.map((entity) => {
-      entity.render({
-        ctx: renderArguments.ctx,
-        position: {
-          x: dynamicX,
-          y: dynamicY,
-        },
-        zoom: this.viewport.zoom,
-      });
-    });
+    for (let i in this.sceneObjectQueue) {
+      for (let j in this.sceneObjectQueue[i]) {
+        if (this.sceneObjectQueue[i][j]) {
+          if (typeof this.sceneObjectQueue[i][j].render !== "function") return;
+
+          this.sceneObjectQueue[i][j].render({
+            ctx: renderArguments.ctx,
+            position: {
+              x: dynamicX,
+              y: dynamicY,
+            },
+            zoom: this.viewport.zoom,
+          });
+        }
+      }
+    }
   }
 
   getViewportValues(): WorldViewport {
@@ -341,23 +360,27 @@ export default class World {
   addToScene(addEntity: RenderChunk): void {
     const globalCoords = addEntity.getCoord();
 
-    if (!Array.isArray(this.sceneObjectQueue[globalCoords.x])) {
-      this.sceneObjectQueue[globalCoords.x] = [];
+    if (!this.sceneObjectQueue[globalCoords.x.toString()]) {
+      this.sceneObjectQueue[globalCoords.x] = {};
     }
 
-    this.sceneObjectQueue[globalCoords.x][globalCoords.y] = addEntity;
+    this.sceneObjectQueue[globalCoords.x.toString(10)][
+      globalCoords.y.toString(10)
+    ] = addEntity;
   }
 
   removeFromScene(removeEntity: RenderChunk): boolean {
     let isRemoveSuccess = false;
 
-    // TODO переписать на двухуровневый массив
-    // this.sceneObjectQueue = this.sceneObjectQueue.filter((entity) => {
-    //   if (entity == removeEntity) {
-    //     isRemoveSuccess = true;
-    //     return false;
-    //   }
-    // });
+    for (let i in this.sceneObjectQueue) {
+      for (let j in this.sceneObjectQueue[i]) {
+        if (this.sceneObjectQueue[i][j] === removeEntity) {
+          delete this.sceneObjectQueue[i][j];
+          isRemoveSuccess = true;
+          return false;
+        }
+      }
+    }
 
     return isRemoveSuccess;
   }

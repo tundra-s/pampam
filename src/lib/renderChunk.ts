@@ -25,10 +25,7 @@ export class RenderChunk {
 
   private draw({ ctx, position, zoom }: RenderChunkArguments): void {
     let x = position.x + GREED.size * this.position.global.x * zoom;
-    let y =
-      position.y +
-      GREED.size * this.position.global.y * zoom -
-      (GREED.size * zoom) / 2;
+    let y = position.y + GREED.size * this.position.global.y * zoom;
 
     ctx.beginPath();
     ctx.fillStyle = "rgb(30, 50, 30)";
