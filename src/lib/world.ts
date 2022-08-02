@@ -36,6 +36,14 @@ export interface WorldGreed {
   size: number;
 }
 
+interface RenderQueue {
+  [key: string]: {
+    [key: string]: RenderChunk;
+  };
+}
+
+export type OnChunkLoaded = (coords: Vector) => void;
+
 export default class World {
   private mouse: WorldMouse = {
     buffer: {
@@ -51,12 +59,12 @@ export default class World {
   private viewport: WorldViewport = {
     scene: {
       renderSize: {
-        x: 400,
-        y: 400,
+        x: window.innerWidth * 0.15,
+        y: window.innerHeight * 0.15,
       },
       preloadSize: {
-        x: 600,
-        y: 600,
+        x: window.innerWidth * 0.3,
+        y: window.innerHeight * 0.3,
       },
     },
     localCoords: {
@@ -67,10 +75,12 @@ export default class World {
       x: 0,
       y: 0,
     },
-    zoom: 2,
+    zoom: WORLD.zoom.default || 1,
   };
 
-  private sceneObjectQueue: RenderChunk[] = [];
+  private handleRequestChunk: OnChunkLoaded = (coords: Vector) => {};
+
+  private sceneObjectQueue: RenderQueue = {};
 
   showGreed: boolean = true;
   greed: WorldGreed = {
@@ -131,6 +141,7 @@ export default class World {
 
     for (let i = 0; i < halfWidth / 2; i += 1) {
       ctx.beginPath();
+      ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         halfWidth -
@@ -155,6 +166,7 @@ export default class World {
 
     for (let i = 0; i < halfWidth / 2; i += 1) {
       ctx.beginPath();
+      ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         halfWidth +
@@ -177,6 +189,7 @@ export default class World {
 
     for (let i = 0; i < halfHeight / 2; i += 1) {
       ctx.beginPath();
+      ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         0,
@@ -197,6 +210,7 @@ export default class World {
 
     for (let i = 1; i < halfHeight / 2; i += 1) {
       ctx.beginPath();
+      ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
       ctx.moveTo(
         0,
@@ -228,11 +242,42 @@ export default class World {
 
   private drawCross({ ctx }: RenderWorldArguments): void {
     ctx.beginPath();
-    ctx.strokeStyle = "rgb(0, 255, 0)";
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgb(255, 255, 0)";
     ctx.moveTo(window.innerWidth / 2, 0);
     ctx.lineTo(window.innerWidth / 2, window.innerHeight);
     ctx.moveTo(0, window.innerHeight / 2);
     ctx.lineTo(window.innerWidth, window.innerHeight / 2);
+    ctx.stroke();
+  }
+
+  private drawRenderZone({ ctx }: RenderWorldArguments): void {
+    const x = window.innerWidth / 2;
+    const y = window.innerHeight / 2;
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgb(0, 255, 255)";
+    ctx.rect(
+      x - this.viewport.scene.renderSize.x / 2,
+      y - this.viewport.scene.renderSize.y / 2,
+      this.viewport.scene.renderSize.x,
+      this.viewport.scene.renderSize.y
+    );
+    ctx.stroke();
+  }
+
+  private drawDownloadZone({ ctx }: RenderWorldArguments): void {
+    const x = window.innerWidth / 2;
+    const y = window.innerHeight / 2;
+    ctx.beginPath();
+    ctx.strokeStyle = "rgb(255, 0, 255)";
+    ctx.lineWidth = 2;
+    ctx.rect(
+      x - this.viewport.scene.preloadSize.x / 2,
+      y - this.viewport.scene.preloadSize.y / 2,
+      this.viewport.scene.preloadSize.x,
+      this.viewport.scene.preloadSize.y
+    );
     ctx.stroke();
   }
 
@@ -292,16 +337,73 @@ export default class World {
         0) *
         this.viewport.zoom;
 
-    this.sceneObjectQueue.map((entity) => {
-      entity.render({
-        ctx: renderArguments.ctx,
-        position: {
-          x: dynamicX,
-          y: dynamicY,
-        },
-        zoom: this.viewport.zoom,
-      });
-    });
+    for (let i in this.sceneObjectQueue) {
+      for (let j in this.sceneObjectQueue[i]) {
+        if (this.sceneObjectQueue[i][j]) {
+          if (typeof this.sceneObjectQueue[i][j].render !== "function") return;
+
+          this.sceneObjectQueue[i][j].render({
+            ctx: renderArguments.ctx,
+            position: {
+              x: dynamicX,
+              y: dynamicY,
+            },
+            zoom: this.viewport.zoom,
+          });
+        }
+      }
+    }
+  }
+
+  private checkChunkZones(): void {
+    // приведем границу к гриду
+    const limit: Vector = {
+      x: Math.ceil(
+        this.viewport.scene.preloadSize.x /
+          2 /
+          (this.greed.size * this.viewport.zoom)
+      ),
+      y: Math.ceil(
+        this.viewport.scene.preloadSize.y /
+          2 /
+          (this.greed.size * this.viewport.zoom)
+      ),
+    };
+
+    const limitX = {
+      min: this.viewport.globalCoords.x - limit.x,
+      max: this.viewport.globalCoords.x + limit.x,
+    };
+
+    const limitY = {
+      min: this.viewport.globalCoords.y - limit.y,
+      max: this.viewport.globalCoords.y + limit.y,
+    };
+
+    for (let line in this.sceneObjectQueue) {
+      for (let cell in this.sceneObjectQueue[line]) {
+        if (this.sceneObjectQueue[line][cell] === undefined) return;
+
+        const coords = this.sceneObjectQueue[line][cell].getCoord();
+        const deltaX =
+          Math.abs(coords.x - this.viewport.globalCoords.x) > limit.x;
+        const deltaY =
+          Math.abs(coords.y - this.viewport.globalCoords.y) > limit.y;
+
+        if (deltaX || deltaY)
+          this.removeFromScene(this.sceneObjectQueue[line][cell]);
+      }
+    }
+
+    for (let i = limitX.min; i < limitX.max; i += 1) {
+      for (let j = limitY.min; j < limitY.max; j += 1) {
+        const line = this.sceneObjectQueue[i.toString(10)];
+
+        if (line === undefined || line[j.toString(10)] === undefined) {
+          this.handleRequestChunk({ x: i, y: j });
+        }
+      }
+    }
   }
 
   getViewportValues(): WorldViewport {
@@ -309,27 +411,58 @@ export default class World {
   }
 
   addToScene(addEntity: RenderChunk): void {
-    this.sceneObjectQueue.push(addEntity);
+    const globalCoords = addEntity.getCoord();
+
+    if (!this.sceneObjectQueue[globalCoords.x.toString(10)]) {
+      this.sceneObjectQueue[globalCoords.x.toString(10)] = {};
+    }
+
+    this.sceneObjectQueue[globalCoords.x.toString(10)][
+      globalCoords.y.toString(10)
+    ] = addEntity;
   }
 
   removeFromScene(removeEntity: RenderChunk): boolean {
     let isRemoveSuccess = false;
 
-    this.sceneObjectQueue = this.sceneObjectQueue.filter((entity) => {
-      if (entity == removeEntity) {
-        isRemoveSuccess = true;
-        return false;
+    for (let i in this.sceneObjectQueue) {
+      for (let j in this.sceneObjectQueue[i]) {
+        if (this.sceneObjectQueue[i][j] === removeEntity) {
+          delete this.sceneObjectQueue[i][j];
+          isRemoveSuccess = true;
+          return false;
+        }
       }
-    });
+    }
 
     return isRemoveSuccess;
+  }
+
+  requestChunk(onChunkQuerry: OnChunkLoaded): void {
+    this.handleRequestChunk = (coords: Vector) => {
+      const idleChunk = new RenderChunk({
+        x: coords.x,
+        y: coords.y,
+      });
+
+      this.addToScene(idleChunk);
+
+      onChunkQuerry({
+        x: coords.x,
+        y: coords.y,
+      });
+    };
   }
 
   render(renderArguments: RenderWorldArguments): void {
     this.drawBackground(renderArguments);
     this.drawGreed(renderArguments);
-    this.drawCross(renderArguments);
 
+    this.checkChunkZones();
     this.renderChildObjects(renderArguments);
+
+    this.drawRenderZone(renderArguments);
+    this.drawDownloadZone(renderArguments);
+    this.drawCross(renderArguments);
   }
 }

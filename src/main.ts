@@ -1,4 +1,3 @@
-import { GREED } from "./data/config";
 import { Core, RenderChallengerArgument } from "./lib/core";
 import { RenderChunk } from "./lib/renderChunk";
 import World, { Vector } from "./lib/world";
@@ -39,6 +38,16 @@ const initCoordMemo = (): Vector => {
   };
 };
 
+const requestDB = ({ x, y }: Vector) =>
+  new Promise<RenderChunk>((resolve, reject) => {
+    console.log(`Request server [${x}; ${y}]`);
+
+    setTimeout(() => {
+      console.log(`Response server [${x}; ${y}]`);
+      resolve(new RenderChunk({ x, y }, "loaded"));
+    }, Math.random() * 1000);
+  });
+
 const init = () => {
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
@@ -54,19 +63,12 @@ const init = () => {
   core.addRender(world);
   core.addRender(updateInfoUIWrapper(world));
 
-  const SEED_X = 10;
-  const SEED_Y = 5;
-
-  for (let i = 0; i < SEED_X; i += 1) {
-    for (let j = 0; j < SEED_Y; j += 1) {
-      const testEntyty = new RenderChunk({
-        x: i - SEED_X / 2,
-        y: j - SEED_Y / 2,
-      });
-
-      world.addToScene(testEntyty);
-    }
-  }
+  //TODO delete test
+  world.requestChunk(({ x, y }) => {
+    requestDB({ x, y }).then((result) => {
+      world.addToScene(result);
+    });
+  });
 };
 
 window.onload = init;
