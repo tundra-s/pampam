@@ -1,5 +1,6 @@
 import { Core, RenderChallengerArgument } from "./lib/core";
 import { RenderChunk } from "./lib/renderChunk";
+import StaticObject from "./lib/staticObject";
 import World, { Vector } from "./lib/world";
 import Info from "./mock/info";
 
@@ -40,11 +41,12 @@ const initCoordMemo = (): Vector => {
 
 const requestDB = ({ x, y }: Vector) =>
   new Promise<RenderChunk>((resolve, reject) => {
-    console.log(`Request server [${x}; ${y}]`);
-
     setTimeout(() => {
       console.log(`Response server [${x}; ${y}]`);
-      resolve(new RenderChunk({ x, y }, "loaded"));
+      const home = new StaticObject({ x: 10, y: 10 });
+      const home2 = new StaticObject({ x: 10, y: 200 });
+
+      resolve(new RenderChunk({ x, y }, "loaded", [home, home2]));
     }, Math.random() * 1000);
   });
 

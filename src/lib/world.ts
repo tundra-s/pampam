@@ -1,7 +1,7 @@
 import { GREED, WORLD } from "../data/config";
 import { RenderChunk } from "./renderChunk";
 
-interface RenderWorldArguments {
+export interface RenderWorldArguments {
   ctx: CanvasRenderingContext2D;
 }
 
