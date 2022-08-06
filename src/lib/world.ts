@@ -1,7 +1,7 @@
 import { GREED, WORLD } from "../data/config";
 import { RenderChunk } from "./renderChunk";
 
-interface RenderWorldArguments {
+export interface RenderWorldArguments {
   ctx: CanvasRenderingContext2D;
 }
 
@@ -59,12 +59,12 @@ export default class World {
   private viewport: WorldViewport = {
     scene: {
       renderSize: {
-        x: window.innerWidth * 0.15,
-        y: window.innerHeight * 0.15,
+        x: window.innerWidth * 0.25,
+        y: window.innerHeight * 0.25,
       },
       preloadSize: {
-        x: window.innerWidth * 0.3,
-        y: window.innerHeight * 0.3,
+        x: window.innerWidth * 0.7,
+        y: window.innerHeight * 0.7,
       },
     },
     localCoords: {
@@ -140,104 +140,67 @@ export default class World {
     const adaptiveGreedSize = GREED.size * this.viewport.zoom;
 
     for (let i = 0; i < halfWidth / 2; i += 1) {
+      const x =
+        halfWidth -
+        adaptiveGreedSize * i -
+        (adaptiveGreedSize -
+          (((this.greed.size - this.viewport.localCoords.x) *
+            this.viewport.zoom) %
+            adaptiveGreedSize));
+
       ctx.beginPath();
       ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
-      ctx.moveTo(
-        halfWidth -
-          adaptiveGreedSize * i -
-          (adaptiveGreedSize -
-            (((this.greed.size - this.viewport.localCoords.x) *
-              this.viewport.zoom) %
-              adaptiveGreedSize)),
-        0
-      );
-      ctx.lineTo(
-        halfWidth -
-          adaptiveGreedSize * i -
-          (adaptiveGreedSize -
-            (((this.greed.size - this.viewport.localCoords.x) *
-              this.viewport.zoom) %
-              adaptiveGreedSize)),
-        window.innerHeight
-      );
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, window.innerHeight);
       ctx.stroke();
     }
 
     for (let i = 0; i < halfWidth / 2; i += 1) {
+      const x =
+        halfWidth +
+        adaptiveGreedSize * i +
+        (((this.greed.size - this.viewport.localCoords.x) *
+          this.viewport.zoom) %
+          adaptiveGreedSize);
+
       ctx.beginPath();
       ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
-      ctx.moveTo(
-        halfWidth +
-          adaptiveGreedSize * i +
-          (((this.greed.size - this.viewport.localCoords.x) *
-            this.viewport.zoom) %
-            adaptiveGreedSize),
-        0
-      );
-      ctx.lineTo(
-        halfWidth +
-          adaptiveGreedSize * i +
-          (((this.greed.size - this.viewport.localCoords.x) *
-            this.viewport.zoom) %
-            adaptiveGreedSize),
-        window.innerHeight
-      );
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, window.innerHeight);
       ctx.stroke();
     }
 
     for (let i = 0; i < halfHeight / 2; i += 1) {
+      const y =
+        halfHeight -
+        adaptiveGreedSize * i -
+        ((this.viewport.localCoords.y * this.viewport.zoom) %
+          adaptiveGreedSize);
+
       ctx.beginPath();
       ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
-      ctx.moveTo(
-        0,
-        halfHeight -
-          adaptiveGreedSize * i -
-          ((this.viewport.localCoords.y * this.viewport.zoom) %
-            adaptiveGreedSize)
-      );
-      ctx.lineTo(
-        window.innerWidth,
-        halfHeight -
-          adaptiveGreedSize * i -
-          ((this.viewport.localCoords.y * this.viewport.zoom) %
-            adaptiveGreedSize)
-      );
+      ctx.moveTo(0, y);
+      ctx.lineTo(window.innerWidth, y);
       ctx.stroke();
     }
 
     for (let i = 1; i < halfHeight / 2; i += 1) {
+      const y =
+        halfHeight +
+        adaptiveGreedSize * i -
+        ((this.viewport.localCoords.y * this.viewport.zoom) %
+          adaptiveGreedSize);
+
       ctx.beginPath();
       ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
-      ctx.moveTo(
-        0,
-        halfHeight +
-          adaptiveGreedSize * i -
-          ((this.viewport.localCoords.y * this.viewport.zoom) %
-            adaptiveGreedSize)
-      );
-      ctx.lineTo(
-        window.innerWidth,
-        halfHeight +
-          adaptiveGreedSize * i -
-          ((this.viewport.localCoords.y * this.viewport.zoom) %
-            adaptiveGreedSize)
-      );
+      ctx.moveTo(0, y);
+      ctx.lineTo(window.innerWidth, y);
       ctx.stroke();
     }
-
-    ctx.beginPath();
-    ctx.fillStyle = "rgb(255, 0, 0)";
-    ctx.rect(
-      (this.viewport.localCoords.x - 10) * this.viewport.zoom,
-      (this.viewport.localCoords.y - 10) * this.viewport.zoom,
-      20 * this.viewport.zoom,
-      20 * this.viewport.zoom
-    );
-    ctx.fill();
   }
 
   private drawCross({ ctx }: RenderWorldArguments): void {
@@ -323,14 +286,14 @@ export default class World {
   }
 
   private renderChildObjects(renderArguments: RenderWorldArguments): void {
-    const dynamicX =
+    const dynamicX: number =
       window.innerWidth / 2 -
       (this.viewport.globalCoords.x * this.greed.size +
         this.viewport.localCoords.x +
         0) *
         this.viewport.zoom;
 
-    const dynamicY =
+    const dynamicY: number =
       window.innerHeight / 2 -
       (this.viewport.globalCoords.y * this.greed.size +
         this.viewport.localCoords.y +
@@ -349,6 +312,10 @@ export default class World {
               y: dynamicY,
             },
             zoom: this.viewport.zoom,
+            renderZone: {
+              x: this.viewport.scene.renderSize.x,
+              y: this.viewport.scene.renderSize.y,
+            },
           });
         }
       }
@@ -356,7 +323,6 @@ export default class World {
   }
 
   private checkChunkZones(): void {
-    // приведем границу к гриду
     const limit: Vector = {
       x: Math.ceil(
         this.viewport.scene.preloadSize.x /
@@ -395,8 +361,8 @@ export default class World {
       }
     }
 
-    for (let i = limitX.min; i < limitX.max; i += 1) {
-      for (let j = limitY.min; j < limitY.max; j += 1) {
+    for (let i = limitX.min; i <= limitX.max; i += 1) {
+      for (let j = limitY.min; j <= limitY.max; j += 1) {
         const line = this.sceneObjectQueue[i.toString(10)];
 
         if (line === undefined || line[j.toString(10)] === undefined) {
