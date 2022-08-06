@@ -356,7 +356,6 @@ export default class World {
   }
 
   private checkChunkZones(): void {
-    // приведем границу к гриду
     const limit: Vector = {
       x: Math.ceil(
         this.viewport.scene.preloadSize.x /
@@ -395,8 +394,8 @@ export default class World {
       }
     }
 
-    for (let i = limitX.min; i < limitX.max; i += 1) {
-      for (let j = limitY.min; j < limitY.max; j += 1) {
+    for (let i = limitX.min; i <= limitX.max; i += 1) {
+      for (let j = limitY.min; j <= limitY.max; j += 1) {
         const line = this.sceneObjectQueue[i.toString(10)];
 
         if (line === undefined || line[j.toString(10)] === undefined) {

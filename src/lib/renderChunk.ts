@@ -46,7 +46,7 @@ export class RenderChunk {
       ctx.fill();
     }
 
-    ctx.font = `${120 * zoom}px Arial`;
+    ctx.font = `${100 * zoom}px Arial`;
     ctx.fillStyle = "rgb(255, 255, 255)";
     ctx.fillText(
       `G [ ${Math.round(this.position.global.x)} : ${Math.round(
