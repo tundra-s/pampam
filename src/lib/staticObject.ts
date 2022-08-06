@@ -35,6 +35,11 @@ export default class StaticObject {
   }
 
   private draw({ ctx, position, zoom }: StaticObjectRenderArguments) {
+    const OBJECT_SIZE = {
+      width: 100,
+      height: 300,
+    };
+    
     const x = position.x + this.position.x * zoom;
     const y = position.y + this.position.y * zoom;
 
