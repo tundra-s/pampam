@@ -140,104 +140,67 @@ export default class World {
     const adaptiveGreedSize = GREED.size * this.viewport.zoom;
 
     for (let i = 0; i < halfWidth / 2; i += 1) {
+      const x =
+        halfWidth -
+        adaptiveGreedSize * i -
+        (adaptiveGreedSize -
+          (((this.greed.size - this.viewport.localCoords.x) *
+            this.viewport.zoom) %
+            adaptiveGreedSize));
+
       ctx.beginPath();
       ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
-      ctx.moveTo(
-        halfWidth -
-          adaptiveGreedSize * i -
-          (adaptiveGreedSize -
-            (((this.greed.size - this.viewport.localCoords.x) *
-              this.viewport.zoom) %
-              adaptiveGreedSize)),
-        0
-      );
-      ctx.lineTo(
-        halfWidth -
-          adaptiveGreedSize * i -
-          (adaptiveGreedSize -
-            (((this.greed.size - this.viewport.localCoords.x) *
-              this.viewport.zoom) %
-              adaptiveGreedSize)),
-        window.innerHeight
-      );
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, window.innerHeight);
       ctx.stroke();
     }
 
     for (let i = 0; i < halfWidth / 2; i += 1) {
+      const x =
+        halfWidth +
+        adaptiveGreedSize * i +
+        (((this.greed.size - this.viewport.localCoords.x) *
+          this.viewport.zoom) %
+          adaptiveGreedSize);
+
       ctx.beginPath();
       ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
-      ctx.moveTo(
-        halfWidth +
-          adaptiveGreedSize * i +
-          (((this.greed.size - this.viewport.localCoords.x) *
-            this.viewport.zoom) %
-            adaptiveGreedSize),
-        0
-      );
-      ctx.lineTo(
-        halfWidth +
-          adaptiveGreedSize * i +
-          (((this.greed.size - this.viewport.localCoords.x) *
-            this.viewport.zoom) %
-            adaptiveGreedSize),
-        window.innerHeight
-      );
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, window.innerHeight);
       ctx.stroke();
     }
 
     for (let i = 0; i < halfHeight / 2; i += 1) {
+      const y =
+        halfHeight -
+        adaptiveGreedSize * i -
+        ((this.viewport.localCoords.y * this.viewport.zoom) %
+          adaptiveGreedSize);
+
       ctx.beginPath();
       ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
-      ctx.moveTo(
-        0,
-        halfHeight -
-          adaptiveGreedSize * i -
-          ((this.viewport.localCoords.y * this.viewport.zoom) %
-            adaptiveGreedSize)
-      );
-      ctx.lineTo(
-        window.innerWidth,
-        halfHeight -
-          adaptiveGreedSize * i -
-          ((this.viewport.localCoords.y * this.viewport.zoom) %
-            adaptiveGreedSize)
-      );
+      ctx.moveTo(0, y);
+      ctx.lineTo(window.innerWidth, y);
       ctx.stroke();
     }
 
     for (let i = 1; i < halfHeight / 2; i += 1) {
+      const y =
+        halfHeight +
+        adaptiveGreedSize * i -
+        ((this.viewport.localCoords.y * this.viewport.zoom) %
+          adaptiveGreedSize);
+
       ctx.beginPath();
       ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
-      ctx.moveTo(
-        0,
-        halfHeight +
-          adaptiveGreedSize * i -
-          ((this.viewport.localCoords.y * this.viewport.zoom) %
-            adaptiveGreedSize)
-      );
-      ctx.lineTo(
-        window.innerWidth,
-        halfHeight +
-          adaptiveGreedSize * i -
-          ((this.viewport.localCoords.y * this.viewport.zoom) %
-            adaptiveGreedSize)
-      );
+      ctx.moveTo(0, y);
+      ctx.lineTo(window.innerWidth, y);
       ctx.stroke();
     }
-
-    ctx.beginPath();
-    ctx.fillStyle = "rgb(255, 0, 0)";
-    ctx.rect(
-      (this.viewport.localCoords.x - 10) * this.viewport.zoom,
-      (this.viewport.localCoords.y - 10) * this.viewport.zoom,
-      20 * this.viewport.zoom,
-      20 * this.viewport.zoom
-    );
-    ctx.fill();
   }
 
   private drawCross({ ctx }: RenderWorldArguments): void {

@@ -38,19 +38,11 @@ export class RenderChunk {
     let x = position.x + GREED.size * this.position.global.x * zoom;
     let y = position.y + GREED.size * this.position.global.y * zoom;
 
-    if (this.status === "loaded") {
-      ctx.beginPath();
-      ctx.fillStyle = "rgb(30, 60, 30)";
-      ctx.rect(x, y, GREED.size * zoom, GREED.size * zoom);
-      ctx.fill();
-    }
-
-    if (this.status === "idle") {
-      ctx.beginPath();
-      ctx.fillStyle = "rgb(60, 30, 50)";
-      ctx.rect(x, y, GREED.size * zoom, GREED.size * zoom);
-      ctx.fill();
-    }
+    ctx.beginPath();
+    if (this.status === "loaded") ctx.fillStyle = "rgb(30, 60, 30)";
+    if (this.status === "idle") ctx.fillStyle = "rgb(60, 30, 50)";
+    ctx.rect(x, y, GREED.size * zoom, GREED.size * zoom);
+    ctx.fill();
 
     if (
       x > window.innerWidth / 2 - renderZone.x / 2 - GREED.size * zoom &&
