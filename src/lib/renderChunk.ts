@@ -31,7 +31,7 @@ export class RenderChunk {
   };
   private chunkOption: ChunkOption = {
     background: "rgb(30, 60, 30)",
-    renderZoomLimit: 0.02,
+    renderZoomLimit: 0.2,
   };
   private status: RenderStatus = "idle";
   private childObjects: StaticObjects = [];
@@ -91,21 +91,6 @@ export class RenderChunk {
           perspective: { angle: 45, deep: 10 },
         });
       });
-
-      ctx.font = `${100 * zoom}px Arial`;
-      ctx.fillStyle = "rgb(255, 255, 255)";
-      ctx.fillText(
-        `G [ ${Math.round(this.position.global.x)} : ${Math.round(
-          this.position.global.y
-        )} ]`,
-        x + (GREED.size * zoom) / 6,
-        y + (GREED.size * zoom) / 3
-      );
-      ctx.fillText(
-        `L [${Math.round(x)} : ${Math.round(y)}]`,
-        x + (GREED.size * zoom) / 6,
-        y + (GREED.size * zoom) / 2
-      );
     }
   }
 
@@ -125,14 +110,19 @@ export class RenderChunk {
     ctx.fill();
 
     if (this.checkRenderZone({ ctx, position, zoom, renderZone })) {
-      ctx.font = `${140 * zoom}px Arial`;
+      ctx.font = `${100 * zoom}px Arial`;
       ctx.fillStyle = "rgb(255, 255, 255)";
       ctx.fillText(
-        `${Math.round(this.position.global.x)} : ${Math.round(
+        `G [ ${Math.round(this.position.global.x)} : ${Math.round(
           this.position.global.y
-        )}`,
+        )} ]`,
         x + (GREED.size * zoom) / 6,
         y + (GREED.size * zoom) / 3
+      );
+      ctx.fillText(
+        `L [${Math.round(x)} : ${Math.round(y)}]`,
+        x + (GREED.size * zoom) / 6,
+        y + (GREED.size * zoom) / 2
       );
     }
   }

@@ -43,10 +43,19 @@ const requestDB = ({ x, y }: Vector) =>
   new Promise<RenderChunk>((resolve, reject) => {
     setTimeout(() => {
       console.log(`Response server [${x}; ${y}]`);
-      const home = new StaticObject({ x: 10, y: 10 });
-      const home2 = new StaticObject({ x: 10, y: 200 });
+      const home = [];
 
-      resolve(new RenderChunk({ x, y }, "loaded", [home, home2]));
+      for (let i = 0; i < 3; i += 1) {
+        home.push(
+          new StaticObject({
+            x: Math.random() * 200 + 300 * i,
+            y: Math.random() * 700,
+            floor: Math.random() * 8 + 1,
+          })
+        );
+      }
+
+      resolve(new RenderChunk({ x, y }, "loaded", home));
     }, Math.random() * 1000);
   });
 
