@@ -5,6 +5,7 @@ interface RenderChunkArguments {
   ctx: CanvasRenderingContext2D;
   position: Vector;
   zoom: number;
+  renderZone: Vector;
 }
 
 interface RenderChunkPosition {
@@ -28,7 +29,12 @@ export class RenderChunk {
     if (status) this.status = status;
   }
 
-  private draw({ ctx, position, zoom }: RenderChunkArguments): void {
+  private draw({
+    ctx,
+    position,
+    zoom,
+    renderZone,
+  }: RenderChunkArguments): void {
     let x = position.x + GREED.size * this.position.global.x * zoom;
     let y = position.y + GREED.size * this.position.global.y * zoom;
 
@@ -46,20 +52,29 @@ export class RenderChunk {
       ctx.fill();
     }
 
-    ctx.font = `${100 * zoom}px Arial`;
-    ctx.fillStyle = "rgb(255, 255, 255)";
-    ctx.fillText(
-      `G [ ${Math.round(this.position.global.x)} : ${Math.round(
-        this.position.global.y
-      )} ]`,
-      x + (GREED.size * zoom) / 6,
-      y + (GREED.size * zoom) / 3
-    );
-    ctx.fillText(
-      `L [${Math.round(x)} : ${Math.round(y)}]`,
-      x + (GREED.size * zoom) / 6,
-      y + (GREED.size * zoom) / 2
-    );
+    if (
+      x > window.innerWidth / 2 - renderZone.x / 2 - GREED.size * zoom &&
+      x < window.innerWidth / 2 + renderZone.x / 2 &&
+      y > window.innerHeight / 2 - renderZone.y / 2 - GREED.size * zoom &&
+      y < window.innerHeight / 2 + renderZone.y / 2
+    ) {
+      if (renderZone) {
+        ctx.font = `${100 * zoom}px Arial`;
+        ctx.fillStyle = "rgb(255, 255, 255)";
+        ctx.fillText(
+          `G [ ${Math.round(this.position.global.x)} : ${Math.round(
+            this.position.global.y
+          )} ]`,
+          x + (GREED.size * zoom) / 6,
+          y + (GREED.size * zoom) / 3
+        );
+        ctx.fillText(
+          `L [${Math.round(x)} : ${Math.round(y)}]`,
+          x + (GREED.size * zoom) / 6,
+          y + (GREED.size * zoom) / 2
+        );
+      }
+    }
   }
 
   setStatus(status: RenderStatus) {

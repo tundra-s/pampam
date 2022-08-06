@@ -59,12 +59,12 @@ export default class World {
   private viewport: WorldViewport = {
     scene: {
       renderSize: {
-        x: window.innerWidth * 0.15,
-        y: window.innerHeight * 0.15,
+        x: window.innerWidth * 0.25,
+        y: window.innerHeight * 0.25,
       },
       preloadSize: {
-        x: window.innerWidth * 0.3,
-        y: window.innerHeight * 0.3,
+        x: window.innerWidth * 0.7,
+        y: window.innerHeight * 0.7,
       },
     },
     localCoords: {
@@ -323,14 +323,14 @@ export default class World {
   }
 
   private renderChildObjects(renderArguments: RenderWorldArguments): void {
-    const dynamicX =
+    const dynamicX: number =
       window.innerWidth / 2 -
       (this.viewport.globalCoords.x * this.greed.size +
         this.viewport.localCoords.x +
         0) *
         this.viewport.zoom;
 
-    const dynamicY =
+    const dynamicY: number =
       window.innerHeight / 2 -
       (this.viewport.globalCoords.y * this.greed.size +
         this.viewport.localCoords.y +
@@ -349,6 +349,10 @@ export default class World {
               y: dynamicY,
             },
             zoom: this.viewport.zoom,
+            renderZone: {
+              x: this.viewport.scene.renderSize.x,
+              y: this.viewport.scene.renderSize.y,
+            },
           });
         }
       }
