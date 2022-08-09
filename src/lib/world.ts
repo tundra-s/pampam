@@ -151,36 +151,30 @@ export default class World {
 
     const adaptiveGreedSize = GREED.size * this.viewport.zoom;
 
-    for (let i = 0; i < halfWidth / 2; i += 1) {
-      const x =
-        halfWidth -
-        adaptiveGreedSize * i -
-        (adaptiveGreedSize -
-          (((this.greed.size - this.viewport.localCoords.x) *
-            this.viewport.zoom) %
-            adaptiveGreedSize));
+    const residue: Vector = {
+      x:
+        ((this.greed.size - this.viewport.localCoords.x) * this.viewport.zoom) %
+        adaptiveGreedSize,
+      y: 0,
+    };
+
+    for (let i = 0; i < halfWidth / adaptiveGreedSize; i += 1) {
+      const rightX =
+        halfWidth - adaptiveGreedSize * i - (adaptiveGreedSize - residue.x);
+      const leftX =
+        halfWidth + adaptiveGreedSize * i - (adaptiveGreedSize - residue.x);
 
       ctx.beginPath();
       ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, window.innerHeight);
-      ctx.stroke();
-    }
+      ctx.moveTo(rightX, 0);
+      ctx.lineTo(rightX, window.innerHeight);
 
-    for (let i = 0; i < halfWidth / 2; i += 1) {
-      const x =
-        halfWidth +
-        adaptiveGreedSize * i +
-        (((this.greed.size - this.viewport.localCoords.x) *
-          this.viewport.zoom) %
-          adaptiveGreedSize);
+      if (i > 0) {
+        ctx.moveTo(leftX, 0);
+        ctx.lineTo(leftX, window.innerHeight);
+      }
 
-      ctx.beginPath();
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = this.greed.line;
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, window.innerHeight);
       ctx.stroke();
     }
 
