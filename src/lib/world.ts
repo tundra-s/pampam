@@ -144,7 +144,6 @@ export default class World {
     ctx.fill();
   }
 
-  // TODO refactor draw greed from 4 loop to 2 loop
   private drawGreed({ ctx }: RenderWorldArguments): void {
     const halfWidth = window.innerWidth / 2;
     const halfHeight = window.innerHeight / 2;
@@ -155,7 +154,7 @@ export default class World {
       x:
         ((this.greed.size - this.viewport.localCoords.x) * this.viewport.zoom) %
         adaptiveGreedSize,
-      y: 0,
+      y: (this.viewport.localCoords.y * this.viewport.zoom) % adaptiveGreedSize,
     };
 
     for (let i = 0; i < halfWidth / adaptiveGreedSize; i += 1) {
@@ -178,33 +177,21 @@ export default class World {
       ctx.stroke();
     }
 
-    for (let i = 0; i < halfHeight / 2; i += 1) {
-      const y =
-        halfHeight -
-        adaptiveGreedSize * i -
-        ((this.viewport.localCoords.y * this.viewport.zoom) %
-          adaptiveGreedSize);
+    for (let i = 0; i < halfHeight / adaptiveGreedSize; i += 1) {
+      const topY = halfHeight - adaptiveGreedSize * i - residue.y;
+      const bottomY = halfHeight + adaptiveGreedSize * i - residue.y;
 
       ctx.beginPath();
       ctx.lineWidth = 1;
       ctx.strokeStyle = this.greed.line;
-      ctx.moveTo(0, y);
-      ctx.lineTo(window.innerWidth, y);
-      ctx.stroke();
-    }
+      ctx.moveTo(0, topY);
+      ctx.lineTo(window.innerWidth, topY);
 
-    for (let i = 1; i < halfHeight / 2; i += 1) {
-      const y =
-        halfHeight +
-        adaptiveGreedSize * i -
-        ((this.viewport.localCoords.y * this.viewport.zoom) %
-          adaptiveGreedSize);
+      if (i > 0) {
+        ctx.moveTo(0, bottomY);
+        ctx.lineTo(window.innerWidth, bottomY);
+      }
 
-      ctx.beginPath();
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = this.greed.line;
-      ctx.moveTo(0, y);
-      ctx.lineTo(window.innerWidth, y);
       ctx.stroke();
     }
   }
