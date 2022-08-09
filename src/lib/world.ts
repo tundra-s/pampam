@@ -63,8 +63,8 @@ export default class World {
         y: window.innerHeight * 0.25,
       },
       preloadSize: {
-        x: window.innerWidth * 0.7,
-        y: window.innerHeight * 0.7,
+        x: window.innerWidth * 0.6,
+        y: window.innerHeight * 0.6,
       },
     },
     localCoords: {
@@ -112,6 +112,16 @@ export default class World {
 
     window.addEventListener("wheel", (e) => {
       const delta = e.deltaY * WORLD.zoom.zoomSpeed * this.viewport.zoom;
+
+      // пропорция от -1 до 1
+      const displacement: Vector = {
+        x:
+          ((e.clientX - window.innerWidth / 2) / this.viewport.zoom) *
+          WORLD.zoom.zoomSpeed,
+        y: 0,
+      };
+
+      console.log(`displacement: {x: ${displacement.x}; y: ${displacement.y}}`);
 
       if (delta + this.viewport.zoom > WORLD.zoom.max) {
         return (this.viewport.zoom = WORLD.zoom.max);
@@ -244,14 +254,9 @@ export default class World {
     ctx.stroke();
   }
 
-  private mouseMoveListener(e: MouseEvent): void {
-    const dx = e.clientX - this.mouse.buffer.x;
-    const dy = e.clientY - this.mouse.buffer.y;
-    this.mouse.buffer.x = e.clientX;
-    this.mouse.buffer.y = e.clientY;
-
-    this.viewport.localCoords.x -= dx / this.viewport.zoom;
-    this.viewport.localCoords.y -= dy / this.viewport.zoom;
+  private applyNewCoords(coords: Vector): void {
+    this.viewport.localCoords.x -= coords.x / this.viewport.zoom;
+    this.viewport.localCoords.y -= coords.y / this.viewport.zoom;
 
     if (this.viewport.localCoords.x / this.greed.size >= 1) {
       this.viewport.globalCoords.x += Math.round(
@@ -283,6 +288,15 @@ export default class World {
 
     window.localStorage.vpx = this.viewport.globalCoords.x;
     window.localStorage.vpy = this.viewport.globalCoords.y;
+  }
+
+  private mouseMoveListener(e: MouseEvent): void {
+    const dx = e.clientX - this.mouse.buffer.x;
+    const dy = e.clientY - this.mouse.buffer.y;
+    this.mouse.buffer.x = e.clientX;
+    this.mouse.buffer.y = e.clientY;
+
+    this.applyNewCoords({ x: dx, y: dy });
   }
 
   private renderChildObjects(renderArguments: RenderWorldArguments): void {
