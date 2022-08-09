@@ -113,15 +113,16 @@ export default class World {
     window.addEventListener("wheel", (e) => {
       const delta = e.deltaY * WORLD.zoom.zoomSpeed * this.viewport.zoom;
 
-      // пропорция от -1 до 1
       const displacement: Vector = {
         x:
           ((e.clientX - window.innerWidth / 2) / this.viewport.zoom) *
-          WORLD.zoom.zoomSpeed,
-        y: 0,
+          delta *
+          -1,
+        y:
+          ((e.clientY - window.innerHeight / 2) / this.viewport.zoom) *
+          delta *
+          -1,
       };
-
-      console.log(`displacement: {x: ${displacement.x}; y: ${displacement.y}}`);
 
       if (delta + this.viewport.zoom > WORLD.zoom.max) {
         return (this.viewport.zoom = WORLD.zoom.max);
@@ -131,6 +132,7 @@ export default class World {
         return (this.viewport.zoom = WORLD.zoom.min);
       }
 
+      this.applyNewCoords({ x: displacement.x, y: displacement.y });
       this.viewport.zoom += delta;
     });
   }
