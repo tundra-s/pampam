@@ -6,7 +6,7 @@ export const GREED = {
 
 export const WORLD = {
   zoom: {
-    default: 1,
+    default: 0.14,
     min: 0.025,
     max: 5,
     zoomSpeed: 0.0005,

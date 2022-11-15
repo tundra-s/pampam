@@ -42,7 +42,6 @@ const initCoordMemo = (): Vector => {
 const requestDB = ({ x, y }: Vector) =>
   new Promise<RenderChunk>((resolve, reject) => {
     setTimeout(() => {
-      console.log(`Response server [${x}; ${y}]`);
       const home = [];
 
       for (let i = 0; i < 3; i += 1) {
@@ -56,7 +55,7 @@ const requestDB = ({ x, y }: Vector) =>
       }
 
       resolve(new RenderChunk({ x, y }, "loaded", home));
-    }, Math.random() * 1000);
+    }, Math.random() * 3000);
   });
 
 const init = () => {
