@@ -1,83 +1,47 @@
-import { Core, RenderChallengerArgument } from "./lib/core";
-import { RenderChunk } from "./lib/renderChunk";
-import StaticObject from "./lib/staticObject";
-import World, { Vector } from "./lib/world";
-import Info from "./mock/info";
-
-const info = new Info("Main");
-
-// TODO переписать на World
-const updateInfoUI = (world: World) => {
-  const worldValues = world.getViewportValues();
-
-  info.log("viewportX", worldValues.localCoords.x);
-  info.log("viewportY", worldValues.localCoords.y);
-  info.log("iii", "----");
-  info.log("zoom", worldValues.zoom);
-  info.log("ii", "----");
-  info.log("globalX", worldValues.globalCoords.x);
-  info.log("globalY", worldValues.globalCoords.y);
+type stateType = {
+  canvas?: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D | null;
 };
 
-const updateInfoUIWrapper = (world: World) => {
-  return {
-    render: ({ ctx }: RenderChallengerArgument) => {
-      updateInfoUI(world);
-    },
-  };
+interface CanvasArgs {
+  ctx: CanvasRenderingContext2D;
+}
+
+const state: stateType = {
+  canvas: undefined,
+  ctx: null,
 };
 
-const _clearLocalStorage = () => {
-  window.localStorage.removeItem("vpx");
-  window.localStorage.removeItem("vpy");
+const resize = (canvas: HTMLCanvasElement) => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 };
 
-const initCoordMemo = (): Vector => {
-  return {
-    x: parseInt(window.localStorage.vpx) || 0,
-    y: parseInt(window.localStorage.vpy) || 0,
-  };
+const createCanvas = () => {
+  state.canvas = document.createElement("canvas");
+  state.ctx = state.canvas.getContext("2d");
+
+  resize(state.canvas);
+
+  document.body.appendChild(state.canvas);
 };
 
-const requestDB = ({ x, y }: Vector) =>
-  new Promise<RenderChunk>((resolve, reject) => {
-    setTimeout(() => {
-      const home = [];
-
-      for (let i = 0; i < 3; i += 1) {
-        home.push(
-          new StaticObject({
-            x: Math.random() * 200 + 300 * i,
-            y: Math.random() * 700,
-            floor: Math.random() * 8 + 1,
-          })
-        );
-      }
-
-      resolve(new RenderChunk({ x, y }, "loaded", home));
-    }, Math.random() * 3000);
-  });
+const draw = ({ ctx }: CanvasArgs) => {
+  ctx.beginPath();
+  ctx.moveTo(30, 30);
+  ctx.lineTo(100, 100);
+  ctx.stroke();
+};
 
 const init = () => {
-  const canvas = document.createElement("canvas");
-  document.body.append(canvas);
+  createCanvas();
 
-  if (!canvas) return;
-  const core = new Core(canvas);
+  if (!state.ctx) return;
 
-  if (!core.isCreated()) return;
-  const viewportPosition = initCoordMemo();
+  draw({ ctx: state.ctx });
 
-  const world = new World(viewportPosition);
-
-  core.addRender(world);
-  core.addRender(updateInfoUIWrapper(world));
-
-  //TODO delete test
-  world.requestChunk(({ x, y }) => {
-    requestDB({ x, y }).then((result) => {
-      world.addToScene(result);
-    });
+  window.addEventListener("resize", () => {
+    if (state.canvas) resize(state.canvas);
   });
 };
 
